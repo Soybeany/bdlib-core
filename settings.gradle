@@ -1,1 +1,1 @@
-include ':app', ':bdlib_core'
+include ':app', ':bd_core_util', ':bd_core_java8'
