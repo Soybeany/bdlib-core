@@ -1,9 +1,10 @@
-package com.soybeany.bdlib.web.core.parser;
+package com.soybeany.bdlib.web.okhttp.parser;
 
 import com.google.gson.Gson;
 import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
-import com.soybeany.bdlib.web.core.request.IResponse;
+
+import okhttp3.ResponseBody;
 
 /**
  * <br>Created by Soybeany on 2019/3/7.
@@ -19,8 +20,8 @@ public abstract class GsonParser<T> implements IParser<T> {
     }
 
     @Override
-    public T parse(IResponse response, IProgressListener listener) throws Exception {
-        return onParse(mGson, StringParser.get().parse(response, null));
+    public T parse(ResponseBody body, IProgressListener listener) throws Exception {
+        return onParse(mGson, StringParser.get().parse(body, null));
     }
 
     protected abstract T onParse(Gson gson, String json) throws Exception;

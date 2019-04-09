@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.web.core.request;
+package com.soybeany.bdlib.web.okhttp;
 
 
 import java.util.Map;

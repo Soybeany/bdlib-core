@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.web.core;
+package com.soybeany.bdlib.web.okhttp;
 
 /**
  * <br>Created by Soybeany on 2019/3/1.
