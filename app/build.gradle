@@ -29,6 +29,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation project(':bd_core_util')
-    implementation project(':bd_core_java8')
+    implementation project(':core_util')
+    implementation project(':core_java8')
 }
