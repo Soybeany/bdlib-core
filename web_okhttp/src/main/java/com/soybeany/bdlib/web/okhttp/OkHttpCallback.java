@@ -19,7 +19,7 @@ import static com.soybeany.bdlib.web.okhttp.ICallback.CODE_NOT_DEFINE;
 /**
  * <br>Created by Soybeany on 2019/4/9.
  */
-public abstract class OkHttpCallback<Result> implements Callback {
+public class OkHttpCallback<Result> implements Callback {
     private IParser<Result> mParser;
     private IProgressListener mDownloadListener; // 下载监听器
     private List<ICallback<Result>> mCallbacks = new LinkedList<>(); // 回调集
