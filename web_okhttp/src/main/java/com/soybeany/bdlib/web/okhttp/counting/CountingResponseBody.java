@@ -19,11 +19,11 @@ import okio.Source;
  */
 public class CountingResponseBody extends ResponseBody {
     private final ResponseBody mDelegate;
-    private final IProgressListener mListener;
+    private final ProgressRecorder mRecorder;
 
     public CountingResponseBody(ResponseBody target, IProgressListener listener) {
         mDelegate = target;
-        mListener = listener;
+        mRecorder = new ProgressRecorder().add(listener);
     }
 
     @Override
@@ -43,8 +43,6 @@ public class CountingResponseBody extends ResponseBody {
     }
 
     private class CountingSource extends ForwardingSource {
-        private final ProgressRecorder mRecorder = new ProgressRecorder().add(mListener);
-
         CountingSource(Source delegate) {
             super(delegate);
             mRecorder.start(contentLength());

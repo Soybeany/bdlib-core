@@ -18,11 +18,11 @@ import okio.Sink;
  */
 public class CountingRequestBody extends RequestBody {
     private final RequestBody mDelegate;
-    private final IProgressListener mListener;
+    private final ProgressRecorder mRecorder;
 
     public CountingRequestBody(RequestBody delegate, IProgressListener listener) {
         mDelegate = delegate;
-        mListener = listener;
+        mRecorder = new ProgressRecorder().add(listener);
     }
 
     @Override
@@ -49,8 +49,6 @@ public class CountingRequestBody extends RequestBody {
     }
 
     private class CountingSink extends ForwardingSink {
-        private final ProgressRecorder mRecorder = new ProgressRecorder().add(mListener);
-
         CountingSink(Sink delegate) {
             super(delegate);
             mRecorder.start(contentLength());
