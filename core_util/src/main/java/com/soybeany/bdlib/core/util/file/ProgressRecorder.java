@@ -18,7 +18,7 @@ public class ProgressRecorder {
     private long mTotal = UNSET;
     private long mCur;
 
-    private Long mStartTimestamp;
+    private volatile Long mStartTimestamp;
 
     public ProgressRecorder add(IProgressListener listener) {
         Optional.ofNullable(listener).ifPresent(l -> mListeners.add(listener));
