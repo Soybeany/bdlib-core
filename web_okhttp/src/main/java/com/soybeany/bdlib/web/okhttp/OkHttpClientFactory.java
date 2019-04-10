@@ -37,6 +37,13 @@ public class OkHttpClientFactory {
     }
 
     /**
+     * 获得自定义的客户端
+     */
+    public static OkHttpClient getClient(IBuilderSetter setter) {
+        return getNewClient(setter);
+    }
+
+    /**
      * 取消指定标签的请求
      */
     public static void cancel(Object tag) {
@@ -66,13 +73,6 @@ public class OkHttpClientFactory {
                 call.cancel();
             }
         }
-    }
-
-    /**
-     * 获得自定义的客户端
-     */
-    public OkHttpClient getClient(IBuilderSetter setter) {
-        return getNewClient(setter);
     }
 
     /**

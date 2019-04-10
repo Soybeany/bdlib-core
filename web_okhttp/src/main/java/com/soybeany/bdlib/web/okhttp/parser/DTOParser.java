@@ -17,7 +17,7 @@ public abstract class DTOParser<T> extends GsonParser<T> {
     }
 
     @Override
-    protected T onParse(Gson gson, String json) {
+    protected T onParse(Gson gson, String json) throws Exception {
         IStruct dto = gson.fromJson(json, mDTOClazz);
         if (dto.isNorm()) {
             return onParseDTO(gson, gson.toJson(dto.data()));

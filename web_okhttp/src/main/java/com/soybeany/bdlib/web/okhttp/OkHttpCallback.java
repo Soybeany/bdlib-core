@@ -29,6 +29,7 @@ public abstract class OkHttpCallback<Result> implements Callback {
     }
 
     @Override
+    @SuppressWarnings("NullableProblems")
     public void onFailure(Call call, IOException e) {
         boolean isCanceled = call.isCanceled();
         invokeFailureCallback(isCanceled, false, false, CODE_NOT_DEFINE, e);
@@ -36,6 +37,7 @@ public abstract class OkHttpCallback<Result> implements Callback {
     }
 
     @Override
+    @SuppressWarnings("NullableProblems")
     public void onResponse(Call call, Response response) {
         try (ResponseBody body = getResponseBody(response)) {
             if (response.isSuccessful()) {
