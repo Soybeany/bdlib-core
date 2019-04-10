@@ -72,7 +72,7 @@ public class OkHttpRequestFactory {
             return mOriginalBuilder.build();
         }
 
-        public abstract void onBuild(String url, Request.Builder builder);
+        protected abstract void onBuild(String url, Request.Builder builder);
     }
 
     /**
@@ -94,7 +94,7 @@ public class OkHttpRequestFactory {
         }
 
         @Override
-        public void onBuild(String url, Request.Builder builder) {
+        protected void onBuild(String url, Request.Builder builder) {
             RequestBody body = getRequestBody();
             builder.post(null != mUploadListener ? new CountingRequestBody(body, mUploadListener) : body);
         }
@@ -110,7 +110,7 @@ public class OkHttpRequestFactory {
         }
 
         @Override
-        public void onBuild(String url, Request.Builder builder) {
+        protected void onBuild(String url, Request.Builder builder) {
             builder.url(URLParser.mergeUrl(url, mParams));
         }
 
