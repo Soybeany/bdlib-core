@@ -39,10 +39,15 @@ public class ProgressRecorder {
         mListeners.clear();
     }
 
-    public ProgressRecorder start(Long total) {
+    public synchronized ProgressRecorder start(Long total) {
+        // 若未结束则不作处理
+        if (null != mStartTimestamp) {
+            return this;
+        }
+        // 重置进度
         mTotal = (null != total && total > 0) ? total : UNSET;
         mCur = 0;
-
+        // 调用开始回调
         for (IProgressListener listener : mListeners) {
             listener.onStart();
         }
@@ -50,9 +55,10 @@ public class ProgressRecorder {
         return this;
     }
 
-    public void stop() {
+    public synchronized void stop() {
+        // 若未开始则不作处理
         if (null == mStartTimestamp) {
-            throw new RuntimeException("记录器尚未开始");
+            return;
         }
         // 按需调用最后一次进度
         if (mNeedFinalProgressCall) {
