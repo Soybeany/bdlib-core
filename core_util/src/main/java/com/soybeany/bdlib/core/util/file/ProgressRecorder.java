@@ -39,7 +39,7 @@ public class ProgressRecorder {
         mListeners.clear();
     }
 
-    public ProgressRecorder start(Long total) {
+    public synchronized ProgressRecorder start(Long total) {
         // 若未结束则不作处理
         if (null != mStartTimestamp) {
             return this;
@@ -55,7 +55,7 @@ public class ProgressRecorder {
         return this;
     }
 
-    public void stop() {
+    public synchronized void stop() {
         // 若未开始则不作处理
         if (null == mStartTimestamp) {
             return;
