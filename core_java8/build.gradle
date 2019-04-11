@@ -1,6 +1,5 @@
 apply plugin: 'java-library'
 apply plugin: 'maven'
-group = 'com.soybeany'
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
