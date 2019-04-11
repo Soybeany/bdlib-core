@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.web.okhttp;
+package com.soybeany.bdlib.web.okhttp.core;
 
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.counting.CountingRequestBody;

@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.web.okhttp;
+package com.soybeany.bdlib.web.okhttp.core;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +25,7 @@ public class OkHttpClientFactory {
     /**
      * 设置默认的客户端
      */
-    public static void setupDefaultClient(IBuilderSetter setter) {
+    public static void setupDefaultClient(IClientSetter setter) {
         DEFAULT_CLIENT = getNewClient(setter);
     }
 
@@ -39,7 +39,7 @@ public class OkHttpClientFactory {
     /**
      * 获得自定义的客户端
      */
-    public static OkHttpClient getClient(IBuilderSetter setter) {
+    public static OkHttpClient getClient(IClientSetter setter) {
         return getNewClient(setter);
     }
 
@@ -58,7 +58,7 @@ public class OkHttpClientFactory {
     /**
      * 获得新的自定义客户端
      */
-    private static OkHttpClient getNewClient(IBuilderSetter setter) {
+    private static OkHttpClient getNewClient(IClientSetter setter) {
         OkHttpClient.Builder builder = DEFAULT_CLIENT.newBuilder();
         setter.onSetup(builder);
         return builder.build();
@@ -78,7 +78,7 @@ public class OkHttpClientFactory {
     /**
      * 建造设置器
      */
-    public interface IBuilderSetter {
+    public interface IClientSetter {
         void onSetup(OkHttpClient.Builder builder);
     }
 }

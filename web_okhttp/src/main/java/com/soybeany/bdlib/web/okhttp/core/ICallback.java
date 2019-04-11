@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.web.okhttp;
+package com.soybeany.bdlib.web.okhttp.core;
 
 /**
  * 自定义回调

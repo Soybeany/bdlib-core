@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.web.okhttp;
+package com.soybeany.bdlib.web.okhttp.core;
 
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.counting.CountingResponseBody;
@@ -14,7 +14,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 import static com.soybeany.bdlib.core.util.IterableUtils.forEach;
-import static com.soybeany.bdlib.web.okhttp.ICallback.CODE_NOT_DEFINE;
+import static com.soybeany.bdlib.web.okhttp.core.ICallback.CODE_NOT_DEFINE;
 
 /**
  * <br>Created by Soybeany on 2019/4/9.

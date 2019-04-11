@@ -2,7 +2,7 @@ package com.soybeany.bdlib.web.okhttp.parser;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.soybeany.bdlib.web.okhttp.HandledException;
+import com.soybeany.bdlib.web.okhttp.core.HandledException;
 
 import java.io.Serializable;
 

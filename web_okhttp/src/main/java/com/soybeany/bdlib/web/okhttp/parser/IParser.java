@@ -1,7 +1,7 @@
 package com.soybeany.bdlib.web.okhttp.parser;
 
 import com.soybeany.bdlib.core.util.file.IProgressListener;
-import com.soybeany.bdlib.web.okhttp.HandledException;
+import com.soybeany.bdlib.web.okhttp.core.HandledException;
 
 import okhttp3.ResponseBody;
 
