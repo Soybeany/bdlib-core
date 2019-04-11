@@ -33,7 +33,7 @@ public class ObjectStorage {
      * @return 是否执行了方法
      */
     @SuppressWarnings("unchecked")
-    public <T> boolean invoke(String key, Consumer<T> consumer) {
+    public <T> boolean invoke(String key, Consumer<T> consumer, Class<T> clazz) {
         T t = (T) get(key);
         if (null != t) {
             consumer.accept(t);
