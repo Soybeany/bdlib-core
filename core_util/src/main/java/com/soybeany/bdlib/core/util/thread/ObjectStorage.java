@@ -17,8 +17,12 @@ public class ObjectStorage {
 
     public String put(Object obj) {
         String uuid = FileUtils.getUUID();
-        mMap.put(uuid, obj);
+        put(uuid, obj);
         return uuid;
+    }
+
+    public void put(String key, Object obj) {
+        mMap.put(key, obj);
     }
 
     public Object get(String key) {
