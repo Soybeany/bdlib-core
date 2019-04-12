@@ -10,8 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * 对象存储器
  * <br>Created by Soybeany on 2019/4/11.
  */
-public class ObjectStorage {
-    public static final ObjectStorage SINGLETON = new ObjectStorage();
+public class KeyValueStorage {
+    public static final KeyValueStorage SINGLETON = new KeyValueStorage();
 
     private final Map<String, Object> mMap = new ConcurrentHashMap<>();
 
@@ -33,7 +33,7 @@ public class ObjectStorage {
      * @return 是否执行了方法
      */
     @SuppressWarnings("unchecked")
-    public <T> boolean invoke(String key, Consumer<T> consumer, Class<T> clazz) {
+    public <T> boolean invoke(String key, Consumer<T> consumer) {
         T t = (T) get(key);
         if (null != t) {
             consumer.accept(t);
