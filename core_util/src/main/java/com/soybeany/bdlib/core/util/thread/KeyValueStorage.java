@@ -1,48 +1,41 @@
 package com.soybeany.bdlib.core.util.thread;
 
 import com.soybeany.bdlib.core.java8.function.Consumer;
-import com.soybeany.bdlib.core.util.file.FileUtils;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 对象存储器
+ * Key-Value存储器
  * <br>Created by Soybeany on 2019/4/11.
  */
-public class KeyValueStorage {
-    public static final KeyValueStorage SINGLETON = new KeyValueStorage();
+public class KeyValueStorage<Key, Value> {
+    private final ConcurrentHashMap<Key, Value> mMap = new ConcurrentHashMap<>();
 
-    private final Map<String, Object> mMap = new ConcurrentHashMap<>();
-
-    public String put(Object obj) {
-        String uuid = FileUtils.getUUID();
-        put(uuid, obj);
-        return uuid;
+    public void put(Key key, Value value) {
+        mMap.put(key, value);
     }
 
-    public void put(String key, Object obj) {
-        mMap.put(key, obj);
+    public void putIfAbsent(Key key, Value value) {
+        mMap.putIfAbsent(key, value);
     }
 
-    public Object get(String key) {
+    public Value get(Key key) {
         return mMap.get(key);
     }
 
     /**
      * @return 是否执行了方法
      */
-    @SuppressWarnings("unchecked")
-    public <T> boolean invoke(String key, Consumer<T> consumer) {
-        T t = (T) get(key);
-        if (null != t) {
-            consumer.accept(t);
+    public boolean invoke(Key key, Consumer<Value> consumer) {
+        Value value = get(key);
+        if (null != value) {
+            consumer.accept(value);
             return true;
         }
         return false;
     }
 
-    public Object remove(String key) {
+    public Object remove(Key key) {
         return mMap.remove(key);
     }
 
