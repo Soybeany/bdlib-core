@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.core.util.thread;
+package com.soybeany.bdlib.core.util.storage;
 
 import com.soybeany.bdlib.core.java8.Optional;
 

@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.core.util.thread;
+package com.soybeany.bdlib.core.util.storage;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
