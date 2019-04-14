@@ -13,14 +13,7 @@ public class IterableUtils {
      * 进行遍历(不带返回值)
      */
     public static <T> void forEach(Iterable<T> iterable, IVoidCallback<T> callback) {
-        forEachInner(iterable, callback, (list, obj, flag) -> {
-            try {
-                callback.onConsume(obj, flag);
-                list.add(obj);
-            } catch (Exception e) {
-                callback.OnException(e, flag);
-            }
-        });
+        forEachInner(iterable, callback, callback::onConsume);
     }
 
     /**
@@ -41,7 +34,13 @@ public class IterableUtils {
         try {
             Flag flag = new Flag();
             for (T t : callback.onInit(iterable)) {
-                consumer.onConsume(handledList, t, flag);
+                try {
+                    consumer.onConsume(t, flag);
+                    handledList.add(t);
+                } catch (Exception e) {
+                    callback.OnException(e, flag);
+                }
+                // 判断是否继续遍历
                 if (!flag.needGoOn) {
                     break;
                 }
@@ -61,12 +60,8 @@ public class IterableUtils {
         }
 
         @Override
-        public void onConsume(List<T> handledList, T obj, Flag flag) {
-            try {
-                mLastReturn = mCallback.onConsume(obj, mLastReturn, flag);
-            } catch (Exception e) {
-                throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e.getMessage()));
-            }
+        public void onConsume(T obj, Flag flag) throws Exception {
+            mLastReturn = mCallback.onConsume(obj, mLastReturn, flag);
         }
 
         R getLastReturn() {
@@ -76,9 +71,6 @@ public class IterableUtils {
 
     public interface IVoidCallback<T> extends ICallback<T> {
         void onConsume(T obj, Flag flag) throws Exception;
-
-        default void OnException(Exception e, Flag flag) {
-        }
     }
 
     public interface IReturnCallback<R, T> extends ICallback<T> {
@@ -94,11 +86,14 @@ public class IterableUtils {
             return iterable;
         }
 
+        default void OnException(Exception e, Flag flag) {
+        }
+
         default void onFinish(List<T> handledList) {
         }
     }
 
     private interface IConsumer<T> {
-        void onConsume(List<T> handledList, T obj, Flag flag);
+        void onConsume(T obj, Flag flag) throws Exception;
     }
 }

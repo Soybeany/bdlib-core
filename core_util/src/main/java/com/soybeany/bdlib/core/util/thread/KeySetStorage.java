@@ -37,12 +37,25 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
         }
     }
 
-    public boolean invokeEach(Key key, Consumer<Value> consumer) {
-        return invoke(key, set -> {
-            for (Value value : set) {
-                consumer.accept(value);
-            }
-        });
+    public boolean containVal(Key key, Value value) {
+        if (!containKey(key)) {
+            return false;
+        }
+        return get(key).contains(value);
+    }
+
+    public boolean invokeVal(Key key, Consumer<Value> consumer) {
+        return invoke(key, set -> innerInvoke(set, consumer));
+    }
+
+    public void invokeAllVal(Consumer<Value> consumer) {
+        invokeAll(set -> innerInvoke(set, consumer));
+    }
+
+    private void innerInvoke(Set<Value> set, Consumer<Value> consumer) {
+        for (Value value : set) {
+            consumer.accept(value);
+        }
     }
 
     public interface ISetProvider<Value> {

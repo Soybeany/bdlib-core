@@ -1,5 +1,6 @@
 package com.soybeany.bdlib.web.okhttp.core;
 
+import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.counting.CountingResponseBody;
 import com.soybeany.bdlib.web.okhttp.parser.IParser;
@@ -13,7 +14,6 @@ import okhttp3.Callback;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import static com.soybeany.bdlib.core.util.IterableUtils.forEach;
 import static com.soybeany.bdlib.web.okhttp.core.ICallback.CODE_NOT_DEFINE;
 
 /**
@@ -33,7 +33,7 @@ public class OkHttpCallback<Result> implements Callback {
     public void onFailure(Call call, IOException e) {
         boolean isCanceled = call.isCanceled();
         invokeFailureCallback(isCanceled, false, false, CODE_NOT_DEFINE, e);
-        forEach(mCallbacks, (callback, flag) -> callback.onFinal(isCanceled));
+        forEach((callback, flag) -> callback.onFinal(isCanceled));
     }
 
     @Override
@@ -48,7 +48,7 @@ public class OkHttpCallback<Result> implements Callback {
         } catch (Exception e) {
             invokeFailureCallback(false, false, false, CODE_NOT_DEFINE, e);
         }
-        forEach(mCallbacks, (callback, flag) -> callback.onFinal(false));
+        forEach((callback, flag) -> callback.onFinal(false));
     }
 
     // //////////////////////////////////设置方法//////////////////////////////////
@@ -87,13 +87,17 @@ public class OkHttpCallback<Result> implements Callback {
     private void parseResponse(int code, ResponseBody body) {
         try {
             Result result = mParser.parse(body, null);
-            forEach(mCallbacks, (callback, flag) -> callback.onSuccess(result));
+            forEach((callback, flag) -> callback.onSuccess(result));
         } catch (Exception e) {
             invokeFailureCallback(false, true, true, code, mParser.onParseException(e));
         }
     }
 
     private void invokeFailureCallback(boolean isCanceled, boolean hasResponse, boolean isHttpSuccess, int code, Exception e) {
-        forEach(mCallbacks, (callback, flag) -> callback.onFailure(isCanceled, callback.onParseExceptionMsg(isCanceled, hasResponse, isHttpSuccess, code, e)));
+        forEach((callback, flag) -> callback.onFailure(isCanceled, callback.onParseExceptionMsg(isCanceled, hasResponse, isHttpSuccess, code, e)));
+    }
+
+    private void forEach(IterableUtils.IVoidCallback<ICallback<Result>> callback) {
+        IterableUtils.forEach(mCallbacks, callback);
     }
 }
