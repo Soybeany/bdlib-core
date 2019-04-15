@@ -64,16 +64,16 @@ public class OkHttpCallback<Result> implements Callback {
     /**
      * 添加自定义回调
      */
-    public OkHttpCallback<Result> addCallback(ICallback<Result> listener) {
-        mCallbacks.add(listener);
+    public OkHttpCallback<Result> addCallback(ICallback<Result> callback) {
+        mCallbacks.add(callback);
         return this;
     }
 
     /**
      * 移除自定义回调
      */
-    public OkHttpCallback<Result> removeCallback(ICallback<Result> listener) {
-        mCallbacks.remove(listener);
+    public OkHttpCallback<Result> removeCallback(ICallback<Result> callback) {
+        mCallbacks.remove(callback);
         return this;
     }
 
