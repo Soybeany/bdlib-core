@@ -19,7 +19,7 @@ public class OkHttpUtils {
     public static class DefaultClientPart implements IClientPart<DefaultRequestPart> {
         @Override
         public DefaultRequestPart newRequest(OkHttpClientFactory.IClientSetter setter) {
-            return new DefaultRequestPart(OkHttpClientFactory.getClient(setter));
+            return new DefaultRequestPart(OkHttpClientFactory.getNewClient(setter));
         }
     }
 
