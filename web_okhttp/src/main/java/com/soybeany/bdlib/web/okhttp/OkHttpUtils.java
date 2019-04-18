@@ -6,6 +6,7 @@ import com.soybeany.bdlib.web.okhttp.part.IRequestPart;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 /**
  * <br>Created by Soybeany on 2019/4/11.
@@ -31,8 +32,8 @@ public class OkHttpUtils {
         }
 
         @Override
-        public Call newCall(IRequestSupplier supplier) {
-            return mClient.newCall(supplier.getRequest());
+        public Call newCall(Request request) {
+            return mClient.newCall(request);
         }
     }
 }

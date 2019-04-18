@@ -7,10 +7,5 @@ import okhttp3.Request;
  * <br>Created by Soybeany on 2019/4/11.
  */
 public interface IRequestPart {
-
-    Call newCall(IRequestSupplier supplier);
-
-    interface IRequestSupplier {
-        Request getRequest();
-    }
+    Call newCall(Request request);
 }
