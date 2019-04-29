@@ -3,6 +3,9 @@ package com.soybeany.bdlib.project;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+/**
+ * 主页面
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override
