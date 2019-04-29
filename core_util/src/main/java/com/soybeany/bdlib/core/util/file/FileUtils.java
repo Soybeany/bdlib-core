@@ -73,8 +73,8 @@ public class FileUtils {
         return b;
     }
 
-    public static void writeToFile(String content, File file, Long total, boolean append, IProgressListener listener) throws IOException {
-        writeToFile(new StringReader(content), file, total, append, listener);
+    public static void writeToFile(String content, File file, boolean append, IProgressListener listener) throws IOException {
+        writeToFile(new StringReader(content), file, (long) content.length(), append, listener);
     }
 
     public static void writeToFile(Reader in, File file, Long total, boolean append, IProgressListener listener) throws IOException {
