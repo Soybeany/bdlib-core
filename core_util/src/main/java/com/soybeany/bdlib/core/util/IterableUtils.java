@@ -87,7 +87,9 @@ public class IterableUtils {
         }
 
         default void OnException(Exception e, Flag flag) {
-            System.out.println("批量操作异常:" + e.getMessage());
+            System.out.println("---------- 批量操作异常 START ----------");
+            e.printStackTrace();
+            System.out.println("---------- 批量操作异常 END ----------");
         }
 
         default void onFinish(List<T> handledList) {
