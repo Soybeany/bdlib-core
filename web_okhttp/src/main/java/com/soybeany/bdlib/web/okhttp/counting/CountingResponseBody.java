@@ -5,6 +5,7 @@ import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.core.util.file.ProgressRecorder;
 
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
@@ -21,9 +22,9 @@ public class CountingResponseBody extends ResponseBody {
     private final ResponseBody mDelegate;
     private final ProgressRecorder mRecorder;
 
-    public CountingResponseBody(ResponseBody target, IProgressListener listener) {
+    public CountingResponseBody(ResponseBody target, List<IProgressListener> listeners) {
         mDelegate = target;
-        mRecorder = new ProgressRecorder().add(listener);
+        mRecorder = new ProgressRecorder().add(listeners.toArray(new IProgressListener[0]));
     }
 
     @Override

@@ -4,6 +4,8 @@ import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.counting.CountingRequestBody;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.FormBody;
@@ -79,7 +81,7 @@ public class OkHttpRequestFactory {
      * post请求基类，允许统计上传进度
      */
     public abstract static class PostBuilder extends BasicBuilder {
-        private IProgressListener mUploadListener; // 上传监听器
+        private final List<IProgressListener> mUploadListeners = new LinkedList<>(); // 上传监听器
 
         public PostBuilder(String url) {
             super(url);
@@ -88,15 +90,23 @@ public class OkHttpRequestFactory {
         /**
          * 设置上传监听器
          */
-        public PostBuilder uploadListener(IProgressListener listener) {
-            mUploadListener = listener;
+        public PostBuilder addUploadListener(IProgressListener listener) {
+            mUploadListeners.add(listener);
+            return this;
+        }
+
+        /**
+         * 移除上传监听器
+         */
+        public PostBuilder removeUploadListener(IProgressListener listener) {
+            mUploadListeners.remove(listener);
             return this;
         }
 
         @Override
         protected void onBuild(String url, Request.Builder builder) {
             RequestBody body = getRequestBody();
-            builder.post(null != mUploadListener ? new CountingRequestBody(body, mUploadListener) : body);
+            builder.post(!mUploadListeners.isEmpty() ? new CountingRequestBody(body, mUploadListeners) : body);
         }
 
         protected abstract RequestBody getRequestBody();

@@ -2,6 +2,7 @@ package com.soybeany.bdlib.core.util.file;
 
 import com.soybeany.bdlib.core.java8.Optional;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,8 +21,8 @@ public class ProgressRecorder {
 
     private volatile Long mStartTimestamp;
 
-    public ProgressRecorder add(IProgressListener listener) {
-        Optional.ofNullable(listener).ifPresent(l -> mListeners.add(listener));
+    public ProgressRecorder add(IProgressListener... listeners) {
+        Optional.ofNullable(listeners).ifPresent(l -> mListeners.addAll(Arrays.asList(listeners)));
         return this;
     }
 

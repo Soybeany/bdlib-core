@@ -21,8 +21,8 @@ import static com.soybeany.bdlib.web.okhttp.core.ICallback.CODE_NOT_DEFINE;
  */
 public class OkHttpCallback<Result> implements Callback {
     private IParser<Result> mParser;
-    private IProgressListener mDownloadListener; // 下载监听器
-    private List<ICallback<Result>> mCallbacks = new LinkedList<>(); // 回调集
+    private final List<IProgressListener> mDownloadListeners = new LinkedList<>(); // 下载监听器
+    private final List<ICallback<Result>> mCallbacks = new LinkedList<>(); // 回调集
 
     public OkHttpCallback(IParser<Result> parser) {
         mParser = parser;
@@ -56,8 +56,16 @@ public class OkHttpCallback<Result> implements Callback {
     /**
      * 设置下载监听器
      */
-    public OkHttpCallback<Result> downloadListener(IProgressListener listener) {
-        mDownloadListener = listener;
+    public OkHttpCallback<Result> addDownloadListener(IProgressListener listener) {
+        mDownloadListeners.add(listener);
+        return this;
+    }
+
+    /**
+     * 移除下载监听器
+     */
+    public OkHttpCallback<Result> removeDownloadListener(IProgressListener listener) {
+        mDownloadListeners.remove(listener);
         return this;
     }
 
@@ -81,7 +89,7 @@ public class OkHttpCallback<Result> implements Callback {
 
     private ResponseBody getResponseBody(Response response) {
         ResponseBody body = response.body();
-        return null != mDownloadListener ? new CountingResponseBody(body, mDownloadListener) : body;
+        return !mDownloadListeners.isEmpty() ? new CountingResponseBody(body, mDownloadListeners) : body;
     }
 
     private void parseResponse(int code, ResponseBody body) {
