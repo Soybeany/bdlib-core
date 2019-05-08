@@ -2,7 +2,7 @@ package com.soybeany.bdlib.web.okhttp.notify;
 
 import com.soybeany.bdlib.core.util.notify.INotifyMsg;
 import com.soybeany.bdlib.core.util.notify.MessageCenter;
-import com.soybeany.bdlib.core.util.storage.IExecutable;
+import com.soybeany.bdlib.core.util.notify.NotifyUtils;
 
 import static com.soybeany.bdlib.core.util.notify.INotifyMsg.Callback.getRealKey;
 
@@ -11,14 +11,15 @@ import static com.soybeany.bdlib.core.util.notify.INotifyMsg.Callback.getRealKey
  */
 public class RequestNotifyUtils {
 
-    public static void autoRegister(IExecutable executable, String notifyKey, Listener listener) {
-        if (!MessageCenter.containKey(getRealKey(notifyKey))) {
-            return;
+    public static void autoRegister(String notifyKey, Listener listener) {
+        if (MessageCenter.containKey(getRealKey(notifyKey))) {
+            NotifyUtils.register(notifyKey, listener.withNotifyKey(notifyKey));
         }
-        MessageCenter.register(executable, notifyKey, listener);
     }
 
     public static abstract class Listener implements MessageCenter.ICallback {
+        private String mNotifyKey;
+
         @Override
         public void onCall(Object data) {
             INotifyMsg msg = (INotifyMsg) data;
@@ -37,6 +38,15 @@ public class RequestNotifyUtils {
                     MessageCenter.unregister(this);
                     break;
             }
+        }
+
+        Listener withNotifyKey(String notifyKey) {
+            mNotifyKey = notifyKey;
+            return this;
+        }
+
+        protected void invoke(InvokerMsg msg) {
+            NotifyUtils.notifyNow(mNotifyKey, msg);
         }
 
         protected abstract void onStart();
