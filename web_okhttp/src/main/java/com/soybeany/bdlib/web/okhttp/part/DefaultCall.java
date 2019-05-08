@@ -1,9 +1,9 @@
 package com.soybeany.bdlib.web.okhttp.part;
 
 import com.soybeany.bdlib.core.java8.Optional;
-import com.soybeany.bdlib.core.util.storage.MessageCenter;
+import com.soybeany.bdlib.core.util.notify.MessageCenter;
+import com.soybeany.bdlib.core.util.notify.NotifyUtils;
 import com.soybeany.bdlib.web.okhttp.notify.CallbackMsg;
-import com.soybeany.bdlib.web.okhttp.notify.NotifyUtils;
 
 import java.io.IOException;
 
