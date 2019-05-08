@@ -6,6 +6,7 @@ import com.soybeany.bdlib.core.util.notify.NotifyUtils;
 import com.soybeany.bdlib.web.okhttp.core.INotifyKeyReceiver;
 import com.soybeany.bdlib.web.okhttp.notify.CallbackMsg;
 import com.soybeany.bdlib.web.okhttp.notify.FinishReason;
+import com.soybeany.bdlib.web.okhttp.notify.InvokerMsg;
 
 import java.io.IOException;
 
@@ -14,6 +15,8 @@ import okhttp3.Callback;
 import okhttp3.Response;
 import okhttp3.internal.annotations.EverythingIsNonNull;
 
+import static com.soybeany.bdlib.web.okhttp.notify.CallbackMsg.TYPE_ON_FINISH;
+import static com.soybeany.bdlib.web.okhttp.notify.CallbackMsg.TYPE_ON_START;
 import static com.soybeany.bdlib.web.okhttp.notify.FinishReason.CANCEL;
 import static com.soybeany.bdlib.web.okhttp.notify.FinishReason.ERROR;
 import static com.soybeany.bdlib.web.okhttp.notify.FinishReason.NORM;
@@ -49,7 +52,8 @@ public class NotifyCall extends IRequestPart.CallWrapper {
 
     private class CallbackWrapper implements Callback {
         private Callback mTarget;
-        private MessageCenter.ICallback mCallback = data -> cancel();
+        private MessageCenter.ICallback mCallback = data -> InvokerMsg.invokeOnCancel(data, NotifyCall.this::cancel);
+        private CallbackMsg mCallbackMsg = new CallbackMsg();
 
         CallbackWrapper(Callback target) {
             mTarget = target;
@@ -69,13 +73,13 @@ public class NotifyCall extends IRequestPart.CallWrapper {
         }
 
         private void register() {
-            NotifyUtils.Dev.devNotifyNow(mNotifyKey, new CallbackMsg(CallbackMsg.TYPE_ON_START, null));
+            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mCallbackMsg.type(TYPE_ON_START));
             NotifyUtils.Dev.devRegister(mNotifyKey, mCallback);
         }
 
         private void unregister(FinishReason reason) {
             NotifyUtils.unregister(mCallback);
-            NotifyUtils.Dev.devNotifyNow(mNotifyKey, new CallbackMsg(CallbackMsg.TYPE_ON_FINISH, reason));
+            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mCallbackMsg.type(TYPE_ON_FINISH).data(reason));
         }
     }
 }

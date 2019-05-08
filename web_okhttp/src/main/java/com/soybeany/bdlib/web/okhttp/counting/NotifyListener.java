@@ -9,15 +9,15 @@ import com.soybeany.bdlib.web.okhttp.notify.CallbackMsg;
  */
 class NotifyListener implements IProgressListener {
     private final String mNotifyKey;
-    private final String mType;
+    private final CallbackMsg mPercentMsg;
 
     NotifyListener(String notifyKey, String type) {
         mNotifyKey = notifyKey;
-        mType = type;
+        mPercentMsg = new CallbackMsg().type(type);
     }
 
     @Override
     public void inProgress(float percent, long cur, long total) {
-        NotifyUtils.Dev.devNotifyNow(mNotifyKey, new CallbackMsg(mType, percent));
+        NotifyUtils.Dev.devNotifyNow(mNotifyKey, mPercentMsg.data(percent));
     }
 }

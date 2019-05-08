@@ -5,8 +5,7 @@ import com.soybeany.bdlib.core.util.notify.INotifyMsg;
 /**
  * <br>Created by Soybeany on 2019/5/8.
  */
-public class CallbackMsg extends INotifyMsg.Impl implements INotifyMsg.Callback {
-
+public class CallbackMsg extends INotifyMsg.Impl<CallbackMsg> implements INotifyMsg.Callback {
     /**
      * 请求开始，data为null
      */
@@ -26,8 +25,4 @@ public class CallbackMsg extends INotifyMsg.Impl implements INotifyMsg.Callback 
      * 下载，data为float的进度(正常 0~1，缺失-1)
      */
     public static final String TYPE_ON_DOWNLOAD = "onDownload";
-
-    public CallbackMsg(String type, Object data) {
-        super(type, data);
-    }
 }

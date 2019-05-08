@@ -10,14 +10,9 @@ public interface INotifyMsg {
 
     Object getData();
 
-    class Impl implements INotifyMsg {
+    class Impl<Msg extends IEditable> implements IEditable<Msg> {
         private String mType;
         private Object mData;
-
-        public Impl(String type, Object data) {
-            this.mType = type;
-            this.mData = data;
-        }
 
         @Override
         public String getType() {
@@ -28,6 +23,29 @@ public interface INotifyMsg {
         public Object getData() {
             return mData;
         }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public Msg type(String type) {
+            mType = type;
+            return (Msg) this;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public Msg data(Object data) {
+            mData = data;
+            return (Msg) this;
+        }
+    }
+
+    /**
+     * 编辑模式
+     */
+    interface IEditable<Msg extends IEditable> extends INotifyMsg {
+        Msg type(String type);
+
+        Msg data(Object data);
     }
 
     /**
