@@ -18,7 +18,7 @@ public class RequestNotifyUtils {
         MessageCenter.register(executable, notifyKey, listener);
     }
 
-    public class Listener implements MessageCenter.ICallback {
+    public static class Listener implements MessageCenter.ICallback {
         @Override
         public void onCall(Object data) {
             INotifyMsg msg = (INotifyMsg) data;
