@@ -18,7 +18,7 @@ public class RequestNotifyUtils {
         MessageCenter.register(executable, notifyKey, listener);
     }
 
-    public static class Listener implements MessageCenter.ICallback {
+    public static abstract class Listener implements MessageCenter.ICallback {
         @Override
         public void onCall(Object data) {
             INotifyMsg msg = (INotifyMsg) data;
@@ -39,16 +39,12 @@ public class RequestNotifyUtils {
             }
         }
 
-        protected void onStart() {
-        }
+        protected abstract void onStart();
 
-        protected void onUpload(float percent) {
-        }
+        protected abstract void onUpload(float percent);
 
-        protected void onDownload(float percent) {
-        }
+        protected abstract void onDownload(float percent);
 
-        protected void onFinish() {
-        }
+        protected abstract void onFinish();
     }
 }
