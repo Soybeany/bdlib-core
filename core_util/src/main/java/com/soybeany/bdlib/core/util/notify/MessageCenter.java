@@ -52,6 +52,10 @@ public class MessageCenter {
         });
     }
 
+    public static boolean containKey(String key) {
+        return CALLBACK_STORAGE.containKey(key);
+    }
+
     /**
      * 停止指定名称的线程
      */
