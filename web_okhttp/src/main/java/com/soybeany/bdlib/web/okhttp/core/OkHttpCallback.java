@@ -19,10 +19,12 @@ import static com.soybeany.bdlib.web.okhttp.core.ICallback.CODE_NOT_DEFINE;
 /**
  * <br>Created by Soybeany on 2019/4/9.
  */
-public class OkHttpCallback<Result> implements Callback {
+public class OkHttpCallback<Result> implements Callback, INotifyKeyReceiver {
     private IParser<Result> mParser;
     private final List<IProgressListener> mDownloadListeners = new LinkedList<>(); // 下载监听器
     private final List<ICallback<Result>> mCallbacks = new LinkedList<>(); // 回调集
+
+    private String mNotifyKey;
 
     public OkHttpCallback(IParser<Result> parser) {
         mParser = parser;
@@ -49,6 +51,11 @@ public class OkHttpCallback<Result> implements Callback {
             invokeFailureCallback(false, false, false, CODE_NOT_DEFINE, e);
         }
         forEach((callback, flag) -> callback.onFinal(false));
+    }
+
+    @Override
+    public void onAttainKey(String notifyKey) {
+        mNotifyKey = notifyKey;
     }
 
     // //////////////////////////////////设置方法//////////////////////////////////
@@ -89,7 +96,7 @@ public class OkHttpCallback<Result> implements Callback {
 
     private ResponseBody getResponseBody(Response response) {
         ResponseBody body = response.body();
-        return !mDownloadListeners.isEmpty() ? new CountingResponseBody(body, mDownloadListeners) : body;
+        return !mDownloadListeners.isEmpty() ? new CountingResponseBody(body, mDownloadListeners, mNotifyKey) : body;
     }
 
     private void parseResponse(int code, ResponseBody body) {

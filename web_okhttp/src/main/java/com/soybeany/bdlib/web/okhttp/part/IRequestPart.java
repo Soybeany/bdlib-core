@@ -1,5 +1,7 @@
 package com.soybeany.bdlib.web.okhttp.part;
 
+import com.soybeany.bdlib.web.okhttp.core.NotifyRequest;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -13,7 +15,7 @@ import okio.Timeout;
  * <br>Created by Soybeany on 2019/4/11.
  */
 public interface IRequestPart {
-    Call newCall(Request request);
+    Call newCall(NotifyRequest request);
 
     @EverythingIsNonNull
     class CallWrapper implements Call {

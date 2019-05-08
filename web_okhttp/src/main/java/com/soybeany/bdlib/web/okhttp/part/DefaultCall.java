@@ -1,12 +1,11 @@
 package com.soybeany.bdlib.web.okhttp.part;
 
-import com.soybeany.bdlib.core.util.IterableUtils;
-import com.soybeany.bdlib.core.util.file.FileUtils;
-import com.soybeany.bdlib.core.util.storage.IExecutable;
+import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.storage.MessageCenter;
+import com.soybeany.bdlib.web.okhttp.notify.CallbackMsg;
+import com.soybeany.bdlib.web.okhttp.notify.NotifyUtils;
 
 import java.io.IOException;
-import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -18,11 +17,11 @@ import okhttp3.internal.annotations.EverythingIsNonNull;
  */
 @EverythingIsNonNull
 public class DefaultCall extends IRequestPart.CallWrapper {
-    private final List<IStateListener> mListeners;
+    private final String mNotifyKey;
 
-    public DefaultCall(Call target, List<IStateListener> listeners) {
+    public DefaultCall(Call target, String notifyKey) {
         super(target);
-        mListeners = listeners;
+        mNotifyKey = notifyKey;
     }
 
     @Override
@@ -31,34 +30,34 @@ public class DefaultCall extends IRequestPart.CallWrapper {
     }
 
     private class CallbackWrapper implements Callback {
-        private final String mCancelUid = "CANCEL-UID:" + FileUtils.getUUID();
         private Callback mTarget;
+        private MessageCenter.ICallback mCallback = data -> cancel();
 
         CallbackWrapper(Callback target) {
             mTarget = target;
-            register();
+            Optional.ofNullable(mNotifyKey).ifPresent(key -> register());
         }
 
         @Override
         public void onFailure(Call call, IOException e) {
             mTarget.onFailure(call, e);
-            unregister();
+            Optional.ofNullable(mNotifyKey).ifPresent(key -> unregister());
         }
 
         @Override
         public void onResponse(Call call, Response response) throws IOException {
             mTarget.onResponse(call, response);
-            unregister();
+            Optional.ofNullable(mNotifyKey).ifPresent(key -> unregister());
         }
 
         private void register() {
-            IterableUtils.forEach(mListeners, (listener, flag) -> listener.onStart(mCancelUid));
-            MessageCenter.register(IExecutable.MULTI_WORK_THREAD, mCancelUid, data -> cancel());
+            NotifyUtils.Dev.devNotifyNow(mNotifyKey, new CallbackMsg(CallbackMsg.TYPE_ON_START, null));
+            NotifyUtils.Dev.devRegister(mNotifyKey, mCallback);
         }
 
         private void unregister() {
-            MessageCenter.unregister(mCancelUid);
-            IterableUtils.forEach(mListeners, (listener, flag) -> listener.onFinish());
+            NotifyUtils.unregister(mCallback);
+            NotifyUtils.Dev.devNotifyNow(mNotifyKey, new CallbackMsg(CallbackMsg.TYPE_ON_FINISH, null));
         }
     }
 }

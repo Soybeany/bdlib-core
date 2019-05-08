@@ -38,11 +38,11 @@ public class MessageCenter {
         Optional.ofNullable(HANDLER_STORAGE.get(callback)).ifPresent(MessageCenter::removeRecords);
     }
 
-    public static <Data> void notifyNow(String key, Data data) {
+    public static void notifyNow(String key, Object data) {
         notifyDelay(key, data, 0);
     }
 
-    public static <Data> void notifyDelay(String key, Data data, long delayMills) {
+    public static void notifyDelay(String key, Object data, long delayMills) {
         Optional.ofNullable(CALLBACK_STORAGE.get(key)).ifPresent(infoSet -> {
             for (Info info : infoSet) {
                 info.holder.post(() -> info.callback.onCall(data), delayMills);
