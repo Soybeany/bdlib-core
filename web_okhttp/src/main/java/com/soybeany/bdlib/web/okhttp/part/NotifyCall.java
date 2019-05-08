@@ -5,6 +5,7 @@ import com.soybeany.bdlib.core.util.notify.MessageCenter;
 import com.soybeany.bdlib.core.util.notify.NotifyUtils;
 import com.soybeany.bdlib.web.okhttp.core.INotifyKeyReceiver;
 import com.soybeany.bdlib.web.okhttp.notify.CallbackMsg;
+import com.soybeany.bdlib.web.okhttp.notify.FinishReason;
 
 import java.io.IOException;
 
@@ -12,6 +13,10 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import okhttp3.internal.annotations.EverythingIsNonNull;
+
+import static com.soybeany.bdlib.web.okhttp.notify.FinishReason.CANCEL;
+import static com.soybeany.bdlib.web.okhttp.notify.FinishReason.ERROR;
+import static com.soybeany.bdlib.web.okhttp.notify.FinishReason.NORM;
 
 /**
  * <br>Created by Soybeany on 2019/5/7.
@@ -54,13 +59,13 @@ public class NotifyCall extends IRequestPart.CallWrapper {
         @Override
         public void onFailure(Call call, IOException e) {
             mTarget.onFailure(call, e);
-            Optional.ofNullable(mNotifyKey).ifPresent(key -> unregister());
+            Optional.ofNullable(mNotifyKey).ifPresent(key -> unregister(call.isCanceled() ? CANCEL : ERROR));
         }
 
         @Override
         public void onResponse(Call call, Response response) throws IOException {
             mTarget.onResponse(call, response);
-            Optional.ofNullable(mNotifyKey).ifPresent(key -> unregister());
+            Optional.ofNullable(mNotifyKey).ifPresent(key -> unregister(NORM));
         }
 
         private void register() {
@@ -68,9 +73,9 @@ public class NotifyCall extends IRequestPart.CallWrapper {
             NotifyUtils.Dev.devRegister(mNotifyKey, mCallback);
         }
 
-        private void unregister() {
+        private void unregister(FinishReason reason) {
             NotifyUtils.unregister(mCallback);
-            NotifyUtils.Dev.devNotifyNow(mNotifyKey, new CallbackMsg(CallbackMsg.TYPE_ON_FINISH, null));
+            NotifyUtils.Dev.devNotifyNow(mNotifyKey, new CallbackMsg(CallbackMsg.TYPE_ON_FINISH, reason));
         }
     }
 }

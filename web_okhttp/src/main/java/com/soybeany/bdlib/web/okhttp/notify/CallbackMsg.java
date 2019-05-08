@@ -13,7 +13,7 @@ public class CallbackMsg extends INotifyMsg.Impl implements INotifyMsg.Callback 
     public static final String TYPE_ON_START = "onStart";
 
     /**
-     * 请求完成，data为null
+     * 请求完成，data为{@link FinishReason}
      */
     public static final String TYPE_ON_FINISH = "onFinish";
 

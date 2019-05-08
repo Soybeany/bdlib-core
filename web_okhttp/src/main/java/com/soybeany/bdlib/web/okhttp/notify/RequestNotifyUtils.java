@@ -34,7 +34,7 @@ public class RequestNotifyUtils {
                     onDownload((Float) msg.getData());
                     break;
                 case CallbackMsg.TYPE_ON_FINISH:
-                    onFinish();
+                    onFinish((FinishReason) msg.getData());
                     MessageCenter.unregister(this);
                     break;
             }
@@ -55,6 +55,6 @@ public class RequestNotifyUtils {
 
         protected abstract void onDownload(float percent);
 
-        protected abstract void onFinish();
+        protected abstract void onFinish(FinishReason reason);
     }
 }
