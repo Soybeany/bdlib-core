@@ -24,17 +24,17 @@ public class RequestNotifyUtils {
         public void onCall(Object data) {
             INotifyMsg msg = (INotifyMsg) data;
             switch (msg.getType()) {
-                case CallbackMsg.TYPE_ON_START:
+                case RequestCallbackMsg.TYPE_ON_START:
                     onStart();
                     break;
-                case CallbackMsg.TYPE_ON_UPLOAD:
+                case RequestCallbackMsg.TYPE_ON_UPLOAD:
                     onUpload((Float) msg.getData());
                     break;
-                case CallbackMsg.TYPE_ON_DOWNLOAD:
+                case RequestCallbackMsg.TYPE_ON_DOWNLOAD:
                     onDownload((Float) msg.getData());
                     break;
-                case CallbackMsg.TYPE_ON_FINISH:
-                    onFinish((FinishReason) msg.getData());
+                case RequestCallbackMsg.TYPE_ON_FINISH:
+                    onFinish((RequestFinishReason) msg.getData());
                     MessageCenter.unregister(this);
                     break;
             }
@@ -45,7 +45,7 @@ public class RequestNotifyUtils {
             return this;
         }
 
-        protected void invoke(InvokerMsg msg) {
+        protected void invoke(ReuqestInvokerMsg msg) {
             NotifyUtils.notifyNow(mNotifyKey, msg);
         }
 
@@ -55,6 +55,6 @@ public class RequestNotifyUtils {
 
         protected abstract void onDownload(float percent);
 
-        protected abstract void onFinish(FinishReason reason);
+        protected abstract void onFinish(RequestFinishReason reason);
     }
 }

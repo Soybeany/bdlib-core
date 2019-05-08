@@ -5,14 +5,14 @@ import com.soybeany.bdlib.core.util.notify.INotifyMsg;
 /**
  * <br>Created by Soybeany on 2019/5/8.
  */
-public class CallbackMsg extends INotifyMsg.Impl<CallbackMsg> implements INotifyMsg.Callback {
+public class RequestCallbackMsg extends INotifyMsg.Impl<RequestCallbackMsg> implements INotifyMsg.Callback {
     /**
      * 请求开始，data为null
      */
     public static final String TYPE_ON_START = "onStart";
 
     /**
-     * 请求完成，data为{@link FinishReason}
+     * 请求完成，data为{@link RequestFinishReason}
      */
     public static final String TYPE_ON_FINISH = "onFinish";
 

@@ -4,9 +4,9 @@ import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.notify.MessageCenter;
 import com.soybeany.bdlib.core.util.notify.NotifyUtils;
 import com.soybeany.bdlib.web.okhttp.core.INotifyKeyReceiver;
-import com.soybeany.bdlib.web.okhttp.notify.CallbackMsg;
-import com.soybeany.bdlib.web.okhttp.notify.FinishReason;
-import com.soybeany.bdlib.web.okhttp.notify.InvokerMsg;
+import com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg;
+import com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason;
+import com.soybeany.bdlib.web.okhttp.notify.ReuqestInvokerMsg;
 
 import java.io.IOException;
 
@@ -15,11 +15,11 @@ import okhttp3.Callback;
 import okhttp3.Response;
 import okhttp3.internal.annotations.EverythingIsNonNull;
 
-import static com.soybeany.bdlib.web.okhttp.notify.CallbackMsg.TYPE_ON_FINISH;
-import static com.soybeany.bdlib.web.okhttp.notify.CallbackMsg.TYPE_ON_START;
-import static com.soybeany.bdlib.web.okhttp.notify.FinishReason.CANCEL;
-import static com.soybeany.bdlib.web.okhttp.notify.FinishReason.ERROR;
-import static com.soybeany.bdlib.web.okhttp.notify.FinishReason.NORM;
+import static com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg.TYPE_ON_FINISH;
+import static com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg.TYPE_ON_START;
+import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.CANCEL;
+import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.ERROR;
+import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.NORM;
 
 /**
  * <br>Created by Soybeany on 2019/5/7.
@@ -52,8 +52,8 @@ public class NotifyCall extends IRequestPart.CallWrapper {
 
     private class CallbackWrapper implements Callback {
         private Callback mTarget;
-        private MessageCenter.ICallback mCallback = data -> InvokerMsg.invokeOnCancel(data, NotifyCall.this::cancel);
-        private CallbackMsg mCallbackMsg = new CallbackMsg();
+        private MessageCenter.ICallback mCallback = data -> ReuqestInvokerMsg.invokeOnCancel(data, NotifyCall.this::cancel);
+        private RequestCallbackMsg mMsg = new RequestCallbackMsg();
 
         CallbackWrapper(Callback target) {
             mTarget = target;
@@ -73,13 +73,13 @@ public class NotifyCall extends IRequestPart.CallWrapper {
         }
 
         private void register() {
-            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mCallbackMsg.type(TYPE_ON_START));
+            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_START));
             NotifyUtils.Dev.devRegister(mNotifyKey, mCallback);
         }
 
-        private void unregister(FinishReason reason) {
+        private void unregister(RequestFinishReason reason) {
             NotifyUtils.unregister(mCallback);
-            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mCallbackMsg.type(TYPE_ON_FINISH).data(reason));
+            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_FINISH).data(reason));
         }
     }
 }

@@ -4,7 +4,7 @@ package com.soybeany.bdlib.web.okhttp.counting;
 import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.core.util.file.ProgressRecorder;
-import com.soybeany.bdlib.web.okhttp.notify.CallbackMsg;
+import com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,7 +27,7 @@ public class CountingResponseBody extends ResponseBody {
     public CountingResponseBody(ResponseBody target, List<IProgressListener> listeners, String notifyKey) {
         mDelegate = target;
         mRecorder = new ProgressRecorder().add(listeners.toArray(new IProgressListener[0]));
-        Optional.ofNullable(notifyKey).ifPresent(key -> mRecorder.add(new NotifyListener(key, CallbackMsg.TYPE_ON_DOWNLOAD)));
+        Optional.ofNullable(notifyKey).ifPresent(key -> mRecorder.add(new NotifyListener(key, RequestCallbackMsg.TYPE_ON_DOWNLOAD)));
     }
 
     @Override
