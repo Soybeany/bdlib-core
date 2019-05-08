@@ -2,9 +2,9 @@ package com.soybeany.bdlib.web.okhttp;
 
 import com.soybeany.bdlib.web.okhttp.core.NotifyRequest;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpClientFactory;
-import com.soybeany.bdlib.web.okhttp.part.DefaultCall;
 import com.soybeany.bdlib.web.okhttp.part.IClientPart;
 import com.soybeany.bdlib.web.okhttp.part.IRequestPart;
+import com.soybeany.bdlib.web.okhttp.part.NotifyCall;
 
 import okhttp3.OkHttpClient;
 
@@ -33,8 +33,8 @@ public class OkHttpUtils {
         }
 
         @Override
-        public DefaultCall newCall(NotifyRequest notifyRequest) {
-            return new DefaultCall(mClient.newCall(notifyRequest.request), notifyRequest.key);
+        public NotifyCall newCall(NotifyRequest notifyRequest) {
+            return new NotifyCall(mClient.newCall(notifyRequest.request), notifyRequest.key);
         }
     }
 }

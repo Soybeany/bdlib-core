@@ -21,7 +21,7 @@ public interface IRequestPart {
     class CallWrapper implements Call {
         private Call mTarget;
 
-        public CallWrapper(Call target) {
+        protected CallWrapper(Call target) {
             mTarget = target;
         }
 
@@ -63,7 +63,11 @@ public interface IRequestPart {
         @Override
         @SuppressWarnings("MethodDoesntCallSuperMethod")
         public Call clone() {
-            return new CallWrapper(mTarget.clone());
+            return new CallWrapper(cloneTarget());
+        }
+
+        protected Call cloneTarget() {
+            return mTarget.clone();
         }
     }
 

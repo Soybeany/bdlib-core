@@ -54,7 +54,7 @@ public class OkHttpCallback<Result> implements Callback, INotifyKeyReceiver {
     }
 
     @Override
-    public void onAttainKey(String notifyKey) {
+    public void onReceive(String notifyKey) {
         mNotifyKey = notifyKey;
     }
 
