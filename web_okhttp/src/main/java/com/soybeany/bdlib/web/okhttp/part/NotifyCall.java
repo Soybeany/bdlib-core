@@ -52,11 +52,15 @@ public class NotifyCall extends IRequestPart.CallWrapper {
     }
 
     public void addNotifier(Notifier notifier) {
-        mNotifiers.add(notifier);
+        mNotifiers.add(notifier.withNotifyKey(mNotifyKey));
     }
 
     public void removeNotifier(Notifier notifier) {
         mNotifiers.remove(notifier);
+    }
+
+    public String getNotifyKey() {
+        return mNotifyKey;
     }
 
     private class CallbackWrapper implements Callback {
