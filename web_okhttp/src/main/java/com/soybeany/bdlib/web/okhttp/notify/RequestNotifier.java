@@ -1,12 +1,12 @@
 package com.soybeany.bdlib.web.okhttp.notify;
 
-import com.soybeany.bdlib.core.util.notify.INotifier;
 import com.soybeany.bdlib.core.util.notify.INotifyMsg;
+import com.soybeany.bdlib.core.util.notify.Notifier;
 
 /**
  * <br>Created by Soybeany on 2019/5/9.
  */
-public abstract class RequestNotifyObserver extends INotifier.Impl {
+public abstract class RequestNotifier extends Notifier {
     @Override
     public void onCall(Object data) {
         INotifyMsg msg = (INotifyMsg) data;

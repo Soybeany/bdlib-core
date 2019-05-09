@@ -1,7 +1,9 @@
 package com.soybeany.bdlib.web.okhttp.part;
 
 import com.soybeany.bdlib.core.java8.Optional;
+import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.notify.MessageCenter;
+import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.core.util.notify.NotifyUtils;
 import com.soybeany.bdlib.web.okhttp.core.INotifyKeyReceiver;
 import com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg;
@@ -9,6 +11,8 @@ import com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason;
 import com.soybeany.bdlib.web.okhttp.notify.RequestInvokerMsg;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -26,6 +30,7 @@ import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.NORM;
  */
 @EverythingIsNonNull
 public class NotifyCall extends IRequestPart.CallWrapper {
+    private final Set<Notifier> mNotifiers = new HashSet<>();
     private final String mNotifyKey;
 
     public NotifyCall(Call target, String notifyKey) {
@@ -46,8 +51,12 @@ public class NotifyCall extends IRequestPart.CallWrapper {
         return new NotifyCall(cloneTarget(), mNotifyKey);
     }
 
-    public String getNotifyKey() {
-        return mNotifyKey;
+    public void addNotifier(Notifier notifier) {
+        mNotifiers.add(notifier);
+    }
+
+    public void removeNotifier(Notifier notifier) {
+        mNotifiers.remove(notifier);
     }
 
     private class CallbackWrapper implements Callback {
@@ -73,13 +82,15 @@ public class NotifyCall extends IRequestPart.CallWrapper {
         }
 
         private void register() {
-            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_START));
             NotifyUtils.Dev.devRegister(mNotifyKey, mCallback);
+            IterableUtils.forEach(mNotifiers, (notifier, flag) -> NotifyUtils.register(mNotifyKey, notifier));
+            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_START));
         }
 
         private void unregister(RequestFinishReason reason) {
-            NotifyUtils.unregister(mCallback);
             NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_FINISH).data(reason));
+            IterableUtils.forEach(mNotifiers, (notifier, flag) -> NotifyUtils.unregister(notifier));
+            NotifyUtils.unregister(mCallback);
         }
     }
 }
