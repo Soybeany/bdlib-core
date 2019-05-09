@@ -1,6 +1,7 @@
 package com.soybeany.bdlib.core.util.storage;
 
 import com.soybeany.bdlib.core.java8.function.Consumer;
+import com.soybeany.bdlib.core.util.IterableUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -10,6 +11,7 @@ import java.util.Set;
  * <br>Created by Soybeany on 2019/4/13.
  */
 public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> {
+    private final Set<IKeyRemoveListener<Key>> mRemoveListeners = new HashSet<>();
     private final ISetProvider<Value> mProvider;
 
     public KeySetStorage() {
@@ -31,9 +33,13 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
 
     public void removeVal(Key key, Value value) {
         Set<Value> set = get(key);
+        if (null == set) {
+            return;
+        }
         set.remove(value);
         if (set.isEmpty()) {
             remove(key);
+            IterableUtils.forEach(mRemoveListeners, (listener, flag) -> listener.onRemoved(key));
         }
     }
 
@@ -52,6 +58,14 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
         invokeAll(set -> innerInvoke(set, consumer));
     }
 
+    public void addKeyRemoveListener(IKeyRemoveListener<Key> listener) {
+        mRemoveListeners.add(listener);
+    }
+
+    public void removeKeyRemoveListener(IKeyRemoveListener<Key> listener) {
+        mRemoveListeners.remove(listener);
+    }
+
     private void innerInvoke(Set<Value> set, Consumer<Value> consumer) {
         for (Value value : set) {
             consumer.accept(value);
@@ -60,5 +74,12 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
 
     public interface ISetProvider<Value> {
         Set<Value> getNewSet();
+    }
+
+    /**
+     * 键被移除的监听
+     */
+    public interface IKeyRemoveListener<Key> {
+        void onRemoved(Key key);
     }
 }

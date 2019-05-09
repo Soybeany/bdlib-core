@@ -11,6 +11,10 @@ import static com.soybeany.bdlib.core.util.notify.INotifyMsg.Invoker;
  */
 public class NotifyUtils {
 
+    public static void autoRegister(String key, INotifier notifier) {
+        register(key, notifier.withNotifyKey(key));
+    }
+
     public static void register(String key, MessageCenter.ICallback callback) {
         MessageCenter.register(IExecutable.MULTI_WORK_THREAD, Callback.getRealKey(key), callback);
     }
@@ -32,4 +36,5 @@ public class NotifyUtils {
             MessageCenter.notifyNow(Callback.getRealKey(key), msg);
         }
     }
+
 }
