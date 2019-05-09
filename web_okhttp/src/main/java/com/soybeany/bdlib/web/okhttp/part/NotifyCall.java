@@ -6,7 +6,7 @@ import com.soybeany.bdlib.core.util.notify.NotifyUtils;
 import com.soybeany.bdlib.web.okhttp.core.INotifyKeyReceiver;
 import com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg;
 import com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason;
-import com.soybeany.bdlib.web.okhttp.notify.ReuqestInvokerMsg;
+import com.soybeany.bdlib.web.okhttp.notify.RequestInvokerMsg;
 
 import java.io.IOException;
 
@@ -52,7 +52,7 @@ public class NotifyCall extends IRequestPart.CallWrapper {
 
     private class CallbackWrapper implements Callback {
         private Callback mTarget;
-        private MessageCenter.ICallback mCallback = data -> ReuqestInvokerMsg.invokeOnCancel(data, NotifyCall.this::cancel);
+        private MessageCenter.ICallback mCallback = data -> RequestInvokerMsg.invokeOnCancel(data, NotifyCall.this::cancel);
         private RequestCallbackMsg mMsg = new RequestCallbackMsg();
 
         CallbackWrapper(Callback target) {
