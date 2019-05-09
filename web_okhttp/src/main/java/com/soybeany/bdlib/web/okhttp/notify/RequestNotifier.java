@@ -33,4 +33,22 @@ public abstract class RequestNotifier extends Notifier {
     protected abstract void onDownload(float percent);
 
     protected abstract void onFinish(RequestFinishReason reason);
+
+    public static class Empty extends RequestNotifier {
+        @Override
+        protected void onStart() {
+        }
+
+        @Override
+        protected void onUpload(float percent) {
+        }
+
+        @Override
+        protected void onDownload(float percent) {
+        }
+
+        @Override
+        protected void onFinish(RequestFinishReason reason) {
+        }
+    }
 }

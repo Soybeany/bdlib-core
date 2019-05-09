@@ -15,4 +15,10 @@ public abstract class Notifier implements MessageCenter.ICallback {
     public void invoke(INotifyMsg.Invoker msg) {
         NotifyUtils.notifyNow(mNotifyKey, msg);
     }
+
+    public static class Empty extends Notifier {
+        @Override
+        public void onCall(Object data) {
+        }
+    }
 }
