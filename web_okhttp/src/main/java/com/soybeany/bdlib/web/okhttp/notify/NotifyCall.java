@@ -1,14 +1,12 @@
-package com.soybeany.bdlib.web.okhttp.part;
+package com.soybeany.bdlib.web.okhttp.notify;
 
 import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.notify.INotifier;
 import com.soybeany.bdlib.core.util.notify.MessageCenter;
 import com.soybeany.bdlib.core.util.notify.NotifyReceiver;
 import com.soybeany.bdlib.core.util.notify.NotifyUtils;
+import com.soybeany.bdlib.web.okhttp.core.CallWrapper;
 import com.soybeany.bdlib.web.okhttp.core.INotifyKeyReceiver;
-import com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg;
-import com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason;
-import com.soybeany.bdlib.web.okhttp.notify.RequestInvokerMsg;
 
 import java.io.IOException;
 
@@ -27,7 +25,7 @@ import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.NORM;
  * <br>Created by Soybeany on 2019/5/7.
  */
 @EverythingIsNonNull
-public class NotifyCall extends IRequestPart.CallWrapper implements INotifier {
+public class NotifyCall extends CallWrapper implements INotifier {
     private final INotifier mDelegate;
     private final String mNotifyKey;
 
