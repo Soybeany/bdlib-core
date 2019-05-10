@@ -1,14 +1,10 @@
 package com.soybeany.bdlib.web.okhttp;
 
-import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.web.okhttp.core.NotifyRequest;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpClientFactory;
 import com.soybeany.bdlib.web.okhttp.notify.NotifyCall;
 import com.soybeany.bdlib.web.okhttp.part.IClientPart;
 import com.soybeany.bdlib.web.okhttp.part.IRequestPart;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -31,24 +27,23 @@ public class OkHttpUtils {
     // //////////////////////////////////标准部分//////////////////////////////////
 
     public static class DefaultClientPart implements IClientPart<IRequestPart> {
-        private final Set<OkHttpClientFactory.IClientSetter> mOuterSetters = new LinkedHashSet<>();
-        protected final OkHttpClientFactory.IClientSetter mSetter = builder -> IterableUtils.forEach(mOuterSetters, (setter, flag) -> setter.onSetup(builder));
+        protected IClientPart.Delegate<IRequestPart> mDelegate = new IClientPart.Delegate<>();
 
         @Override
         public IClientPart<IRequestPart> addSetter(OkHttpClientFactory.IClientSetter setter) {
-            mOuterSetters.add(setter);
+            mDelegate.addSetter(setter);
             return this;
         }
 
         @Override
         public IClientPart<IRequestPart> removeSetter(OkHttpClientFactory.IClientSetter setter) {
-            mOuterSetters.remove(setter);
+            mDelegate.removeSetter(setter);
             return this;
         }
 
         @Override
         public IRequestPart newRequest() {
-            return new DefaultRequestPart(OkHttpClientFactory.getNewClient(mSetter));
+            return new DefaultRequestPart(OkHttpClientFactory.getNewClient(mDelegate.getSetter()));
         }
     }
 
@@ -70,7 +65,7 @@ public class OkHttpUtils {
     public static class NotifyClientPart extends DefaultClientPart {
         @Override
         public IRequestPart newRequest() {
-            return new NotifyRequestPart(OkHttpClientFactory.getNewClient(mSetter));
+            return new NotifyRequestPart(OkHttpClientFactory.getNewClient(mDelegate.getSetter()));
         }
     }
 
