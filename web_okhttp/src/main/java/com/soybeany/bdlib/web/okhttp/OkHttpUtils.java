@@ -1,6 +1,6 @@
 package com.soybeany.bdlib.web.okhttp;
 
-import com.soybeany.bdlib.web.okhttp.core.NotifyRequest;
+import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpClientFactory;
 import com.soybeany.bdlib.web.okhttp.notify.NotifyCall;
 import com.soybeany.bdlib.web.okhttp.part.IClientPart;
@@ -20,14 +20,14 @@ public class OkHttpUtils {
         return new DefaultClientPart();
     }
 
-    public static NotifyClientPart newNotifierClient() {
-        return new NotifyClientPart();
+    public static NotifyClientPart newNotifierClient(Notifier notifier) {
+        return new NotifyClientPart(notifier);
     }
 
     // //////////////////////////////////标准部分//////////////////////////////////
 
     public static class DefaultClientPart implements IClientPart<IRequestPart> {
-        protected IClientPart.Delegate<IRequestPart> mDelegate = new IClientPart.Delegate<>();
+        private IClientPart.Delegate<IRequestPart> mDelegate = new IClientPart.Delegate<>();
 
         @Override
         public IClientPart<IRequestPart> addSetter(OkHttpClientFactory.IClientSetter setter) {
@@ -43,11 +43,15 @@ public class OkHttpUtils {
 
         @Override
         public IRequestPart newRequest() {
-            return new DefaultRequestPart(OkHttpClientFactory.getNewClient(mDelegate.getSetter()));
+            return new DefaultRequestPart(newClient());
+        }
+
+        protected OkHttpClient newClient() {
+            return OkHttpClientFactory.getNewClient(mDelegate.getSetter());
         }
     }
 
-    public static class DefaultRequestPart implements IRequestPart<Request> {
+    public static class DefaultRequestPart implements IRequestPart {
         private OkHttpClient mClient;
 
         public DefaultRequestPart(OkHttpClient client) {
@@ -63,22 +67,29 @@ public class OkHttpUtils {
     // //////////////////////////////////带通知部分//////////////////////////////////
 
     public static class NotifyClientPart extends DefaultClientPart {
+        private Notifier mNotifier;
+
+        public NotifyClientPart(Notifier notifier) {
+            mNotifier = notifier;
+        }
+
         @Override
         public IRequestPart newRequest() {
-            return new NotifyRequestPart(OkHttpClientFactory.getNewClient(mDelegate.getSetter()));
+            return new NotifyRequestPart(newClient(), mNotifier);
         }
     }
 
-    public static class NotifyRequestPart implements IRequestPart<NotifyRequest> {
-        private OkHttpClient mClient;
+    public static class NotifyRequestPart extends DefaultRequestPart {
+        private Notifier mNotifier;
 
-        public NotifyRequestPart(OkHttpClient client) {
-            mClient = client;
+        public NotifyRequestPart(OkHttpClient client, Notifier notifier) {
+            super(client);
+            mNotifier = notifier;
         }
 
         @Override
-        public NotifyCall newCall(NotifyRequest notifyRequest) {
-            return new NotifyCall(mClient.newCall(notifyRequest.request), notifyRequest.key);
+        public NotifyCall newCall(Request request) {
+            return new NotifyCall(super.newCall(request), mNotifier);
         }
     }
 }

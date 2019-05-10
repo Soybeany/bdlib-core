@@ -1,9 +1,8 @@
 package com.soybeany.bdlib.web.okhttp.notify;
 
 import com.soybeany.bdlib.core.java8.Optional;
-import com.soybeany.bdlib.core.util.notify.INotifier;
 import com.soybeany.bdlib.core.util.notify.MessageCenter;
-import com.soybeany.bdlib.core.util.notify.NotifyReceiver;
+import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.core.util.notify.NotifyUtils;
 import com.soybeany.bdlib.web.okhttp.core.CallWrapper;
 import com.soybeany.bdlib.web.okhttp.core.INotifyKeyReceiver;
@@ -25,13 +24,14 @@ import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.NORM;
  * <br>Created by Soybeany on 2019/5/7.
  */
 @EverythingIsNonNull
-public class NotifyCall extends CallWrapper implements INotifier {
-    private final INotifier mDelegate;
+public class NotifyCall extends CallWrapper {
+    private final Notifier mNotifier;
     private final String mNotifyKey;
 
-    public NotifyCall(Call target, String notifyKey) {
+    public NotifyCall(Call target, Notifier notifier) {
         super(target);
-        mDelegate = new INotifier.Impl(mNotifyKey = notifyKey);
+        mNotifier = notifier;
+        mNotifyKey = notifier.getNotifyKey();
     }
 
     @Override
@@ -44,32 +44,7 @@ public class NotifyCall extends CallWrapper implements INotifier {
 
     @Override
     public Call clone() {
-        return new NotifyCall(cloneTarget(), mNotifyKey);
-    }
-
-    @Override
-    public void addReceiver(NotifyReceiver receiver) {
-        mDelegate.addReceiver(receiver);
-    }
-
-    @Override
-    public void removeReceiver(NotifyReceiver receiver) {
-        mDelegate.removeReceiver(receiver);
-    }
-
-    @Override
-    public String getNotifyKey() {
-        return mDelegate.getNotifyKey();
-    }
-
-    @Override
-    public void registerReceivers() {
-        mDelegate.registerReceivers();
-    }
-
-    @Override
-    public void unregisterReceivers() {
-        mDelegate.unregisterReceivers();
+        return new NotifyCall(cloneTarget(), mNotifier);
     }
 
     private class CallbackWrapper implements Callback {
@@ -96,13 +71,13 @@ public class NotifyCall extends CallWrapper implements INotifier {
 
         private void register() {
             NotifyUtils.Dev.devRegister(mNotifyKey, mCallback);
-            mDelegate.registerReceivers();
+            mNotifier.register();
             NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_START));
         }
 
         private void unregister(RequestFinishReason reason) {
             NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_FINISH).data(reason));
-            mDelegate.unregisterReceivers();
+            mNotifier.unregister();
             NotifyUtils.unregister(mCallback);
         }
     }
