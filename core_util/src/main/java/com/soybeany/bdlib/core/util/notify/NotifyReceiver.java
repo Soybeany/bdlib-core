@@ -21,7 +21,7 @@ public class NotifyReceiver implements MessageCenter.ICallback {
 
     @Override
     public void onCall(Object data) {
-        IterableUtils.forEach(mDealers, (dealer, flag) -> dealer.onCall((INotifyMsg) data));
+        INotifyMsg.invokeIfIsNotifyMsg(data, msg -> IterableUtils.forEach(mDealers, (dealer, flag) -> dealer.onCall(msg)));
     }
 
     public void invoke(INotifyMsg.Invoker msg) {

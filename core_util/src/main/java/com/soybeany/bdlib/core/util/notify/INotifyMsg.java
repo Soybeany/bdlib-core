@@ -1,10 +1,18 @@
 package com.soybeany.bdlib.core.util.notify;
 
+import com.soybeany.bdlib.core.java8.function.Consumer;
+
 /**
  * 通知信息
  * <br>Created by Soybeany on 2019/5/8.
  */
 public interface INotifyMsg {
+
+    static void invokeIfIsNotifyMsg(Object data, Consumer<INotifyMsg> consumer) {
+        if (data instanceof INotifyMsg) {
+            consumer.accept((INotifyMsg) data);
+        }
+    }
 
     String getType();
 
