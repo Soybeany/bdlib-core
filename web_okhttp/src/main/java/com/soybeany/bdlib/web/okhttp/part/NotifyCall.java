@@ -1,7 +1,7 @@
 package com.soybeany.bdlib.web.okhttp.part;
 
 import com.soybeany.bdlib.core.java8.Optional;
-import com.soybeany.bdlib.core.util.IterableUtils;
+import com.soybeany.bdlib.core.util.notify.INotifier;
 import com.soybeany.bdlib.core.util.notify.MessageCenter;
 import com.soybeany.bdlib.core.util.notify.NotifyReceiver;
 import com.soybeany.bdlib.core.util.notify.NotifyUtils;
@@ -11,8 +11,6 @@ import com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason;
 import com.soybeany.bdlib.web.okhttp.notify.RequestInvokerMsg;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -29,13 +27,13 @@ import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.NORM;
  * <br>Created by Soybeany on 2019/5/7.
  */
 @EverythingIsNonNull
-public class NotifyCall extends IRequestPart.CallWrapper {
-    private final Set<NotifyReceiver> mReceivers = new HashSet<>();
+public class NotifyCall extends IRequestPart.CallWrapper implements INotifier {
+    private final INotifier mDelegate;
     private final String mNotifyKey;
 
     public NotifyCall(Call target, String notifyKey) {
         super(target);
-        mNotifyKey = notifyKey;
+        mDelegate = new INotifier.Impl(mNotifyKey = notifyKey);
     }
 
     @Override
@@ -51,16 +49,29 @@ public class NotifyCall extends IRequestPart.CallWrapper {
         return new NotifyCall(cloneTarget(), mNotifyKey);
     }
 
-    public void addReceiver(NotifyReceiver notifier) {
-        mReceivers.add(notifier.withNotifyKey(mNotifyKey));
+    @Override
+    public void addReceiver(NotifyReceiver receiver) {
+        mDelegate.addReceiver(receiver);
     }
 
-    public void removeReceiver(NotifyReceiver notifier) {
-        mReceivers.remove(notifier);
+    @Override
+    public void removeReceiver(NotifyReceiver receiver) {
+        mDelegate.removeReceiver(receiver);
     }
 
+    @Override
     public String getNotifyKey() {
-        return mNotifyKey;
+        return mDelegate.getNotifyKey();
+    }
+
+    @Override
+    public void registerReceivers() {
+        mDelegate.registerReceivers();
+    }
+
+    @Override
+    public void unregisterReceivers() {
+        mDelegate.unregisterReceivers();
     }
 
     private class CallbackWrapper implements Callback {
@@ -87,13 +98,13 @@ public class NotifyCall extends IRequestPart.CallWrapper {
 
         private void register() {
             NotifyUtils.Dev.devRegister(mNotifyKey, mCallback);
-            IterableUtils.forEach(mReceivers, (receiver, flag) -> NotifyUtils.register(mNotifyKey, receiver));
+            mDelegate.registerReceivers();
             NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_START));
         }
 
         private void unregister(RequestFinishReason reason) {
             NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_FINISH).data(reason));
-            IterableUtils.forEach(mReceivers, (receiver, flag) -> NotifyUtils.unregister(receiver));
+            mDelegate.unregisterReceivers();
             NotifyUtils.unregister(mCallback);
         }
     }

@@ -12,7 +12,9 @@ import static com.soybeany.bdlib.core.util.notify.INotifyMsg.Invoker;
 public class NotifyUtils {
 
     public static void register(String key, MessageCenter.ICallback callback) {
-        MessageCenter.register(IExecutable.MULTI_WORK_THREAD, Callback.getRealKey(key), callback);
+        if (null != key) {
+            MessageCenter.register(IExecutable.MULTI_WORK_THREAD, Callback.getRealKey(key), callback);
+        }
     }
 
     public static void unregister(MessageCenter.ICallback callback) {
@@ -25,12 +27,13 @@ public class NotifyUtils {
 
     public static class Dev {
         public static void devRegister(String key, MessageCenter.ICallback callback) {
-            MessageCenter.register(IExecutable.MULTI_WORK_THREAD, Invoker.getRealKey(key), callback);
+            if (null != key) {
+                MessageCenter.register(IExecutable.MULTI_WORK_THREAD, Invoker.getRealKey(key), callback);
+            }
         }
 
         public static void devNotifyNow(String key, Callback msg) {
             MessageCenter.notifyNow(Callback.getRealKey(key), msg);
         }
     }
-
 }
