@@ -1,7 +1,7 @@
 package com.soybeany.bdlib.web.okhttp.core;
 
-import com.soybeany.bdlib.core.util.file.FileUtils;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
+import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.web.okhttp.counting.CountingRequestBody;
 
 import java.util.HashMap;
@@ -70,13 +70,12 @@ public class OkHttpRequestFactory {
         /**
          * 构造请求
          */
-        public NotifyRequest build() {
-            String notifyKey = "Request_" + FileUtils.getUUID();
-            onBuild(mUrl, mOriginalBuilder, notifyKey);
-            return new NotifyRequest(mOriginalBuilder.build(), notifyKey);
+        public Request build(Notifier notifier) {
+            onBuild(mUrl, mOriginalBuilder, notifier);
+            return mOriginalBuilder.build();
         }
 
-        protected abstract void onBuild(String url, Request.Builder builder, String notifyKey);
+        protected abstract void onBuild(String url, Request.Builder builder, Notifier notifier);
     }
 
     /**
@@ -106,9 +105,9 @@ public class OkHttpRequestFactory {
         }
 
         @Override
-        protected void onBuild(String url, Request.Builder builder, String notifyKey) {
+        protected void onBuild(String url, Request.Builder builder, Notifier notifier) {
             RequestBody body = getRequestBody();
-            builder.post(!mUploadListeners.isEmpty() ? new CountingRequestBody(body, mUploadListeners, notifyKey) : body);
+            builder.post(!mUploadListeners.isEmpty() ? new CountingRequestBody(body, mUploadListeners, notifier) : body);
         }
 
         protected abstract RequestBody getRequestBody();
@@ -122,7 +121,7 @@ public class OkHttpRequestFactory {
         }
 
         @Override
-        protected void onBuild(String url, Request.Builder builder, String notifyKey) {
+        protected void onBuild(String url, Request.Builder builder, Notifier notifier) {
             builder.url(URLParser.mergeUrl(url, mParams));
         }
 

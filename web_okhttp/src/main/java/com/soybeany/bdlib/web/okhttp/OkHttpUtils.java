@@ -1,12 +1,13 @@
 package com.soybeany.bdlib.web.okhttp;
 
+import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpClientFactory;
 import com.soybeany.bdlib.web.okhttp.notify.NotifyCall;
-import com.soybeany.bdlib.web.okhttp.part.IClientPart;
-import com.soybeany.bdlib.web.okhttp.part.IRequestPart;
 
-import okhttp3.Call;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
@@ -16,80 +17,54 @@ import okhttp3.Request;
  */
 public class OkHttpUtils {
 
-    public static DefaultClientPart newDefaultClient() {
-        return new DefaultClientPart();
+    public static ClientPart newDefaultClient() {
+        return new ClientPart();
     }
 
-    public static NotifyClientPart newNotifierClient(Notifier notifier) {
-        return new NotifyClientPart(notifier);
-    }
+    public static class ClientPart {
+        private final Set<OkHttpClientFactory.IClientSetter> mOuterSetters = new LinkedHashSet<>();
+        private final OkHttpClientFactory.IClientSetter mSetter = builder -> IterableUtils.forEach(mOuterSetters, (setter, flag) -> setter.onSetup(builder));
+        private Notifier mNotifier;
 
-    // //////////////////////////////////标准部分//////////////////////////////////
-
-    public static class DefaultClientPart implements IClientPart<IRequestPart> {
-        private IClientPart.Delegate<IRequestPart> mDelegate = new IClientPart.Delegate<>();
-
-        @Override
-        public IClientPart<IRequestPart> addSetter(OkHttpClientFactory.IClientSetter setter) {
-            mDelegate.addSetter(setter);
+        public ClientPart addSetter(OkHttpClientFactory.IClientSetter setter) {
+            mOuterSetters.add(setter);
             return this;
         }
 
-        @Override
-        public IClientPart<IRequestPart> removeSetter(OkHttpClientFactory.IClientSetter setter) {
-            mDelegate.removeSetter(setter);
+        public ClientPart removeSetter(OkHttpClientFactory.IClientSetter setter) {
+            mOuterSetters.remove(setter);
             return this;
         }
 
-        @Override
-        public IRequestPart newRequest() {
-            return new DefaultRequestPart(newClient());
+        public ClientPart notifier(Notifier notifier) {
+            mNotifier = notifier;
+            return this;
+        }
+
+        public RequestPart newRequest() {
+            return new RequestPart(newClient(), mNotifier);
         }
 
         protected OkHttpClient newClient() {
-            return OkHttpClientFactory.getNewClient(mDelegate.getSetter());
+            return OkHttpClientFactory.getNewClient(mSetter);
         }
     }
 
-    public static class DefaultRequestPart implements IRequestPart {
+    public static class RequestPart {
         private OkHttpClient mClient;
+        private Notifier mNotifier;
 
-        public DefaultRequestPart(OkHttpClient client) {
+        public RequestPart(OkHttpClient client, Notifier notifier) {
             mClient = client;
-        }
-
-        @Override
-        public Call newCall(Request request) {
-            return mClient.newCall(request);
-        }
-    }
-
-    // //////////////////////////////////带通知部分//////////////////////////////////
-
-    public static class NotifyClientPart extends DefaultClientPart {
-        private Notifier mNotifier;
-
-        public NotifyClientPart(Notifier notifier) {
             mNotifier = notifier;
         }
 
-        @Override
-        public IRequestPart newRequest() {
-            return new NotifyRequestPart(newClient(), mNotifier);
+        public NotifyCall newCall(RequestGetter getter) {
+            return new NotifyCall(mClient.newCall(getter.getRequest(mNotifier)), mNotifier);
         }
     }
 
-    public static class NotifyRequestPart extends DefaultRequestPart {
-        private Notifier mNotifier;
-
-        public NotifyRequestPart(OkHttpClient client, Notifier notifier) {
-            super(client);
-            mNotifier = notifier;
-        }
-
-        @Override
-        public NotifyCall newCall(Request request) {
-            return new NotifyCall(super.newCall(request), mNotifier);
-        }
+    public interface RequestGetter {
+        Request getRequest(Notifier notifier);
     }
 }

@@ -3,9 +3,8 @@ package com.soybeany.bdlib.web.okhttp.notify;
 import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.notify.MessageCenter;
 import com.soybeany.bdlib.core.util.notify.Notifier;
-import com.soybeany.bdlib.core.util.notify.NotifyUtils;
 import com.soybeany.bdlib.web.okhttp.core.CallWrapper;
-import com.soybeany.bdlib.web.okhttp.core.INotifyKeyReceiver;
+import com.soybeany.bdlib.web.okhttp.core.OkHttpCallback;
 
 import java.io.IOException;
 
@@ -26,18 +25,16 @@ import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.NORM;
 @EverythingIsNonNull
 public class NotifyCall extends CallWrapper {
     private final Notifier mNotifier;
-    private final String mNotifyKey;
 
     public NotifyCall(Call target, Notifier notifier) {
         super(target);
         mNotifier = notifier;
-        mNotifyKey = notifier.getNotifyKey();
     }
 
     @Override
     public void enqueue(Callback callback) {
-        if (callback instanceof INotifyKeyReceiver) {
-            ((INotifyKeyReceiver) callback).onReceive(mNotifyKey);
+        if (callback instanceof OkHttpCallback) {
+            ((OkHttpCallback) callback).setNotifier(mNotifier);
         }
         super.enqueue(new CallbackWrapper(callback));
     }
@@ -54,31 +51,31 @@ public class NotifyCall extends CallWrapper {
 
         CallbackWrapper(Callback target) {
             mTarget = target;
-            Optional.ofNullable(mNotifyKey).ifPresent(key -> register());
+            Optional.ofNullable(mNotifier).ifPresent(this::register);
         }
 
         @Override
         public void onFailure(Call call, IOException e) {
             mTarget.onFailure(call, e);
-            Optional.ofNullable(mNotifyKey).ifPresent(key -> unregister(call.isCanceled() ? CANCEL : ERROR));
+            Optional.ofNullable(mNotifier).ifPresent(notifier -> unregister(notifier, call.isCanceled() ? CANCEL : ERROR));
         }
 
         @Override
         public void onResponse(Call call, Response response) throws IOException {
             mTarget.onResponse(call, response);
-            Optional.ofNullable(mNotifyKey).ifPresent(key -> unregister(NORM));
+            Optional.ofNullable(mNotifier).ifPresent(notifier -> unregister(notifier, NORM));
         }
 
-        private void register() {
-            NotifyUtils.Dev.devRegister(mNotifyKey, mCallback);
-            mNotifier.register();
-            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_START));
+        private void register(Notifier notifier) {
+            notifier.devRegister(mCallback);
+            notifier.registerDealers();
+            notifier.devNotifyNow(mMsg.type(TYPE_ON_START));
         }
 
-        private void unregister(RequestFinishReason reason) {
-            NotifyUtils.Dev.devNotifyNow(mNotifyKey, mMsg.type(TYPE_ON_FINISH).data(reason));
-            mNotifier.unregister();
-            NotifyUtils.unregister(mCallback);
+        private void unregister(Notifier notifier, RequestFinishReason reason) {
+            notifier.devNotifyNow(mMsg.type(TYPE_ON_FINISH).data(reason));
+            notifier.unregisterDealers();
+            notifier.unregister(mCallback);
         }
     }
 }
