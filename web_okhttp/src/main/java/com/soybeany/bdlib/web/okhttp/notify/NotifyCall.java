@@ -44,6 +44,10 @@ public class NotifyCall extends CallWrapper {
         return new NotifyCall(cloneTarget(), mNotifier);
     }
 
+    public Notifier getNotifier() {
+        return mNotifier;
+    }
+
     private class CallbackWrapper implements Callback {
         private Callback mTarget;
         private MessageCenter.ICallback mCallback = data -> RequestInvokerMsg.invokeOnCancel(data, NotifyCall.this::cancel);
