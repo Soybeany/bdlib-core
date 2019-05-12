@@ -44,7 +44,7 @@ public class NotifyCall extends CallWrapper {
         return new NotifyCall(cloneTarget(), mNotifier);
     }
 
-    public Notifier getNotifier() {
+    public Notifier<RequestInvokerMsg, RequestCallbackMsg> getNotifier() {
         return mNotifier;
     }
 
