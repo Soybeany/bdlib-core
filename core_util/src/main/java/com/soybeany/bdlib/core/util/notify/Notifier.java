@@ -92,6 +92,10 @@ public class Notifier {
             Optional.ofNullable(dealer).ifPresent(mDealers::remove);
         }
 
+        public void clearDealers() {
+            mDealers.clear();
+        }
+
         public void notifyNow(Msg msg) {
             MessageCenter.notifyNow(mKey, msg);
         }
@@ -102,7 +106,7 @@ public class Notifier {
 
         void unregister() {
             MessageCenter.unregister(this);
-            mDealers.clear(); // 清空集合，为新一轮作准备
+            clearDealers(); // 清空集合，为新一轮作准备
         }
     }
 
