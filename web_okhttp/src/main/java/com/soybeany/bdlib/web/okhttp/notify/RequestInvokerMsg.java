@@ -9,7 +9,7 @@ public class RequestInvokerMsg extends INotifyMsg.Impl<RequestInvokerMsg> implem
     /**
      * 取消请求
      */
-    public static final INotifyMsg.Invoker CANCEL_MSG = new RequestInvokerMsg().type("cancel");
+    public static final RequestInvokerMsg CANCEL_MSG = new RequestInvokerMsg().type("cancel");
 
     public static void invokeOnCancel(Object data, Runnable runnable) {
         if (CANCEL_MSG.equals(data)) {
