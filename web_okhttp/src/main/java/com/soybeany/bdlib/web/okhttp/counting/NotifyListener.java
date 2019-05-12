@@ -18,6 +18,6 @@ class NotifyListener implements IProgressListener {
 
     @Override
     public void inProgress(float percent, long cur, long total) {
-        mNotifier.devNotifyNow(mPercentMsg.data(percent));
+        mNotifier.callback().notifyNow(mPercentMsg.data(percent));
     }
 }

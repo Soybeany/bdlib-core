@@ -1,7 +1,7 @@
 package com.soybeany.bdlib.web.okhttp.notify;
 
 import com.soybeany.bdlib.core.java8.Optional;
-import com.soybeany.bdlib.core.util.notify.MessageCenter;
+import com.soybeany.bdlib.core.util.notify.IOnCallDealer;
 import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.web.okhttp.core.CallWrapper;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpCallback;
@@ -50,7 +50,7 @@ public class NotifyCall extends CallWrapper {
 
     private class CallbackWrapper implements Callback {
         private Callback mTarget;
-        private MessageCenter.ICallback mCallback = data -> RequestInvokerMsg.invokeOnCancel(data, NotifyCall.this::cancel);
+        private IOnCallDealer mDealer = msg -> RequestInvokerMsg.invokeOnCancel(msg, NotifyCall.this::cancel);
         private RequestCallbackMsg mMsg = new RequestCallbackMsg();
 
         CallbackWrapper(Callback target) {
@@ -71,15 +71,15 @@ public class NotifyCall extends CallWrapper {
         }
 
         private void register(Notifier notifier) {
-            notifier.devRegister(mCallback);
-            notifier.registerDealers();
-            notifier.devNotifyNow(mMsg.type(TYPE_ON_START));
+            notifier.register();
+            notifier.invoker().addDealer(mDealer);
+            notifier.callback().notifyNow(mMsg.type(TYPE_ON_START));
         }
 
         private void unregister(Notifier notifier, RequestFinishReason reason) {
-            notifier.devNotifyNow(mMsg.type(TYPE_ON_FINISH).data(reason));
-            notifier.unregisterDealers();
-            notifier.unregister(mCallback);
+            notifier.callback().notifyNow(mMsg.type(TYPE_ON_FINISH).data(reason));
+            notifier.invoker().removeDealer(mDealer);
+            notifier.unregister();
         }
     }
 }

@@ -24,7 +24,6 @@ public class OkHttpUtils {
     public static class ClientPart {
         private final Set<OkHttpClientFactory.IClientSetter> mOuterSetters = new LinkedHashSet<>();
         private final OkHttpClientFactory.IClientSetter mSetter = builder -> IterableUtils.forEach(mOuterSetters, (setter, flag) -> setter.onSetup(builder));
-        private Notifier mNotifier;
 
         public ClientPart addSetter(OkHttpClientFactory.IClientSetter setter) {
             mOuterSetters.add(setter);
@@ -36,13 +35,8 @@ public class OkHttpUtils {
             return this;
         }
 
-        public ClientPart notifier(Notifier notifier) {
-            mNotifier = notifier;
-            return this;
-        }
-
         public RequestPart newRequest() {
-            return new RequestPart(newClient(), mNotifier);
+            return new RequestPart(newClient());
         }
 
         protected OkHttpClient newClient() {
@@ -52,19 +46,22 @@ public class OkHttpUtils {
 
     public static class RequestPart {
         private OkHttpClient mClient;
-        private Notifier mNotifier;
 
-        public RequestPart(OkHttpClient client, Notifier notifier) {
+        public RequestPart(OkHttpClient client) {
             mClient = client;
-            mNotifier = notifier;
         }
 
         public NotifyCall newCall(RequestGetter getter) {
-            return new NotifyCall(mClient.newCall(getter.getRequest(mNotifier)), mNotifier);
+            Notifier notifier = getter.getNewNotifier();
+            return new NotifyCall(mClient.newCall(getter.getRequest(notifier)), notifier);
         }
     }
 
     public interface RequestGetter {
         Request getRequest(Notifier notifier);
+
+        default Notifier getNewNotifier() {
+            return new Notifier();
+        }
     }
 }
