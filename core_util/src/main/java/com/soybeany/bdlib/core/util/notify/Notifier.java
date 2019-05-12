@@ -21,9 +21,10 @@ public class Notifier {
 
     {
         String notifyKey = FileUtils.getUUID();
-        mInvokerFunc = new Invoker(notifyKey);
-        mCallbackFunc = new Callback(notifyKey);
-        mFuncList = Arrays.asList(mInvokerFunc, mInvokerFunc);
+        mFuncList = Arrays.asList(
+                mInvokerFunc = new Invoker(notifyKey),
+                mCallbackFunc = new Callback(notifyKey)
+        );
     }
 
     // //////////////////////////////////方法区//////////////////////////////////
