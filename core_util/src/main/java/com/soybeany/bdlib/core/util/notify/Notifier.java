@@ -89,7 +89,7 @@ public class Notifier {
         }
 
         public void removeDealer(IOnCallDealer dealer) {
-            mDealers.remove(dealer);
+            Optional.ofNullable(dealer).ifPresent(mDealers::remove);
         }
 
         public void notifyNow(Msg msg) {

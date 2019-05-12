@@ -1,5 +1,6 @@
 package com.soybeany.bdlib.web.okhttp;
 
+import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpClientFactory;
@@ -26,12 +27,12 @@ public class OkHttpUtils {
         private final OkHttpClientFactory.IClientSetter mSetter = builder -> IterableUtils.forEach(mOuterSetters, (setter, flag) -> setter.onSetup(builder));
 
         public ClientPart addSetter(OkHttpClientFactory.IClientSetter setter) {
-            mOuterSetters.add(setter);
+            Optional.ofNullable(setter).ifPresent(mOuterSetters::add);
             return this;
         }
 
         public ClientPart removeSetter(OkHttpClientFactory.IClientSetter setter) {
-            mOuterSetters.remove(setter);
+            Optional.ofNullable(setter).ifPresent(mOuterSetters::remove);
             return this;
         }
 
