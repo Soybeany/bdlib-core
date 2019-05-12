@@ -52,6 +52,13 @@ public class Notifier {
     }
 
     /**
+     * 重置
+     */
+    public void reset() {
+        IterableUtils.forEach(mFuncList, (func, flag) -> func.clearDealers());
+    }
+
+    /**
      * 使用主动的功能
      */
     public Invoker invoker() {
