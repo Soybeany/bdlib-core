@@ -5,6 +5,8 @@ import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpClientFactory;
 import com.soybeany.bdlib.web.okhttp.notify.NotifyCall;
+import com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg;
+import com.soybeany.bdlib.web.okhttp.notify.RequestInvokerMsg;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -53,7 +55,7 @@ public class OkHttpUtils {
         }
 
         public NotifyCall newCall(RequestGetter getter) {
-            Notifier notifier = getter.getNewNotifier();
+            Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier = getter.getNewNotifier();
             return new NotifyCall(mClient.newCall(getter.getRequest(notifier)), notifier);
         }
     }
@@ -61,8 +63,8 @@ public class OkHttpUtils {
     public interface RequestGetter {
         Request getRequest(Notifier notifier);
 
-        default Notifier getNewNotifier() {
-            return new Notifier();
+        default Notifier<RequestInvokerMsg, RequestCallbackMsg> getNewNotifier() {
+            return new Notifier<>();
         }
     }
 }

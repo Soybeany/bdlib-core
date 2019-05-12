@@ -4,6 +4,8 @@ import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.web.okhttp.counting.CountingResponseBody;
+import com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg;
+import com.soybeany.bdlib.web.okhttp.notify.RequestInvokerMsg;
 import com.soybeany.bdlib.web.okhttp.parser.IParser;
 
 import java.io.IOException;
@@ -25,7 +27,7 @@ public class OkHttpCallback<Result> implements Callback {
     private final List<IProgressListener> mDownloadListeners = new LinkedList<>(); // 下载监听器
     private final List<ICallback<Result>> mCallbacks = new LinkedList<>(); // 回调集
 
-    private Notifier mNotifier;
+    private Notifier<RequestInvokerMsg, RequestCallbackMsg> mNotifier;
 
     public OkHttpCallback(IParser<Result> parser) {
         mParser = parser;
@@ -56,7 +58,7 @@ public class OkHttpCallback<Result> implements Callback {
 
     // //////////////////////////////////设置方法//////////////////////////////////
 
-    public void setNotifier(Notifier notifier) {
+    public void setNotifier(Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier) {
         mNotifier = notifier;
     }
 

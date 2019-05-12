@@ -24,9 +24,9 @@ import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.NORM;
  */
 @EverythingIsNonNull
 public class NotifyCall extends CallWrapper {
-    private final Notifier mNotifier;
+    private final Notifier<RequestInvokerMsg, RequestCallbackMsg> mNotifier;
 
-    public NotifyCall(Call target, Notifier notifier) {
+    public NotifyCall(Call target, Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier) {
         super(target);
         mNotifier = notifier;
     }
@@ -70,13 +70,13 @@ public class NotifyCall extends CallWrapper {
             Optional.ofNullable(mNotifier).ifPresent(notifier -> unregister(notifier, NORM));
         }
 
-        private void register(Notifier notifier) {
+        private void register(Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier) {
             notifier.register();
             notifier.invoker().addDealer(mDealer);
             notifier.callback().notifyNow(mMsg.type(TYPE_ON_START));
         }
 
-        private void unregister(Notifier notifier, RequestFinishReason reason) {
+        private void unregister(Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier, RequestFinishReason reason) {
             notifier.callback().notifyNow(mMsg.type(TYPE_ON_FINISH).data(reason));
             notifier.invoker().removeDealer(mDealer);
             notifier.unregister();

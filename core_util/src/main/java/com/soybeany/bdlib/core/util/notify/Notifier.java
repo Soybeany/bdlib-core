@@ -14,9 +14,9 @@ import java.util.Set;
  * 通知者，需在合适的地方手动调用{@link #register}与{@link #unregister}
  * <br>Created by Soybeany on 2019/5/11.
  */
-public class Notifier {
-    private final Invoker mInvokerFunc;
-    private final Callback mCallbackFunc;
+public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends INotifyMsg.Callback> {
+    private final Invoker<InvokerMsg> mInvokerFunc;
+    private final Callback<CallbackMsg> mCallbackFunc;
     private final List<DealerFunc> mFuncList;
 
     public Notifier() {
@@ -30,8 +30,8 @@ public class Notifier {
     public Notifier(IExecutable invoker, IExecutable callback) {
         String notifyKey = FileUtils.getUUID();
         mFuncList = Arrays.asList(
-                mInvokerFunc = new Invoker(invoker, notifyKey),
-                mCallbackFunc = new Callback(callback, notifyKey)
+                mInvokerFunc = new Invoker<>(invoker, notifyKey),
+                mCallbackFunc = new Callback<>(callback, notifyKey)
         );
     }
 
@@ -52,23 +52,16 @@ public class Notifier {
     }
 
     /**
-     * 重置
-     */
-    public void reset() {
-        IterableUtils.forEach(mFuncList, (func, flag) -> func.clearDealers());
-    }
-
-    /**
      * 使用主动的功能
      */
-    public Invoker invoker() {
+    public Invoker<InvokerMsg> invoker() {
         return mInvokerFunc;
     }
 
     /**
      * 使用回调的功能
      */
-    public Callback callback() {
+    public Callback<CallbackMsg> callback() {
         return mCallbackFunc;
     }
 
@@ -99,10 +92,6 @@ public class Notifier {
             Optional.ofNullable(dealer).ifPresent(mDealers::remove);
         }
 
-        public void clearDealers() {
-            mDealers.clear();
-        }
-
         public void notifyNow(Msg msg) {
             MessageCenter.notifyNow(mKey, msg);
         }
@@ -113,17 +102,18 @@ public class Notifier {
 
         void unregister() {
             MessageCenter.unregister(this);
-            clearDealers(); // 清空集合，为新一轮作准备
+            mDealers.clear();
+            ; // 清空集合，为新一轮作准备
         }
     }
 
-    public static class Invoker extends DealerFunc<INotifyMsg.Invoker> {
+    public static class Invoker<Msg extends INotifyMsg.Invoker> extends DealerFunc<Msg> {
         Invoker(IExecutable executable, String key) {
             super(executable, "invoker:" + key);
         }
     }
 
-    public static class Callback extends DealerFunc<INotifyMsg.Callback> {
+    public static class Callback<Msg extends INotifyMsg.Callback> extends DealerFunc<Msg> {
         Callback(IExecutable executable, String key) {
             super(executable, "callback:" + key);
         }
