@@ -19,11 +19,19 @@ public class Notifier {
     private final Callback mCallbackFunc;
     private final List<DealerFunc> mFuncList;
 
-    {
+    public Notifier() {
+        this(null);
+    }
+
+    public Notifier(IExecutable executable) {
+        this(executable, executable);
+    }
+
+    public Notifier(IExecutable invoker, IExecutable callback) {
         String notifyKey = FileUtils.getUUID();
         mFuncList = Arrays.asList(
-                mInvokerFunc = new Invoker(notifyKey),
-                mCallbackFunc = new Callback(notifyKey)
+                mInvokerFunc = new Invoker(invoker, notifyKey),
+                mCallbackFunc = new Callback(callback, notifyKey)
         );
     }
 
@@ -61,9 +69,11 @@ public class Notifier {
 
     private static class DealerFunc<Msg extends INotifyMsg> implements MessageCenter.ICallback {
         private final Set<IOnCallDealer> mDealers = new HashSet<>();
+        private final IExecutable mExecutable;
         private final String mKey;
 
-        DealerFunc(String key) {
+        DealerFunc(IExecutable executable, String key) {
+            mExecutable = (null != executable ? executable : IExecutable.MULTI_WORK_THREAD);
             mKey = key;
         }
 
@@ -87,7 +97,7 @@ public class Notifier {
         }
 
         void register() {
-            MessageCenter.register(IExecutable.MULTI_WORK_THREAD, mKey, this);
+            MessageCenter.register(mExecutable, mKey, this);
         }
 
         void unregister() {
@@ -97,14 +107,14 @@ public class Notifier {
     }
 
     public static class Invoker extends DealerFunc<INotifyMsg.Invoker> {
-        Invoker(String key) {
-            super("invoker:" + key);
+        Invoker(IExecutable executable, String key) {
+            super(executable, "invoker:" + key);
         }
     }
 
     public static class Callback extends DealerFunc<INotifyMsg.Callback> {
-        Callback(String key) {
-            super("callback:" + key);
+        Callback(IExecutable executable, String key) {
+            super(executable, "callback:" + key);
         }
     }
 }
