@@ -67,6 +67,18 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
 
     // //////////////////////////////////内部类区//////////////////////////////////
 
+    public static class Invoker<Msg extends INotifyMsg.Invoker> extends DealerFunc<Msg> {
+        Invoker(IExecutable executable, String key) {
+            super(executable, "invoker:" + key);
+        }
+    }
+
+    public static class Callback<Msg extends INotifyMsg.Callback> extends DealerFunc<Msg> {
+        Callback(IExecutable executable, String key) {
+            super(executable, "callback:" + key);
+        }
+    }
+
     private static class DealerFunc<Msg extends INotifyMsg> implements MessageCenter.ICallback {
         private final Set<IOnCallDealer> mDealers = new HashSet<>();
         private final IExecutable mExecutable;
@@ -81,6 +93,9 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         public void onCall(Object data) {
             if (data instanceof INotifyMsg) {
                 IterableUtils.forEach(mDealers, (dealer, flag) -> dealer.onCall((INotifyMsg) data));
+            } else if (data instanceof TempDealerMsg) {
+                TempDealerMsg dealerMsg = (TempDealerMsg) data;
+                IterableUtils.forEach(dealerMsg.dealers, (dealer, flag) -> dealer.onCall(dealerMsg.msg));
             }
         }
 
@@ -96,26 +111,31 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             MessageCenter.notifyNow(mKey, msg);
         }
 
+        /**
+         * 若在发送通知后就需要立刻注销，则使用此方法
+         */
+        public void notifyAndUnregister(Msg msg) {
+            MessageCenter.notifyNow(mKey, new TempDealerMsg(mDealers, msg));
+            unregister();
+        }
+
         void register() {
             MessageCenter.register(mExecutable, mKey, this);
         }
 
         void unregister() {
             MessageCenter.unregister(this);
-            mDealers.clear();
-            ; // 清空集合，为新一轮作准备
+            mDealers.clear(); // 清空集合，为新一轮作准备
         }
     }
 
-    public static class Invoker<Msg extends INotifyMsg.Invoker> extends DealerFunc<Msg> {
-        Invoker(IExecutable executable, String key) {
-            super(executable, "invoker:" + key);
-        }
-    }
+    private static class TempDealerMsg {
+        final Set<IOnCallDealer> dealers = new HashSet<>();
+        INotifyMsg msg;
 
-    public static class Callback<Msg extends INotifyMsg.Callback> extends DealerFunc<Msg> {
-        Callback(IExecutable executable, String key) {
-            super(executable, "callback:" + key);
+        TempDealerMsg(Set<IOnCallDealer> dealers, INotifyMsg msg) {
+            this.dealers.addAll(dealers);
+            this.msg = msg;
         }
     }
 }

@@ -77,9 +77,8 @@ public class NotifyCall extends CallWrapper {
         }
 
         private void unregister(Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier, RequestFinishReason reason) {
-            notifier.callback().notifyNow(mMsg.type(TYPE_ON_FINISH).data(reason));
+            notifier.callback().notifyAndUnregister(mMsg.type(TYPE_ON_FINISH).data(reason));
             notifier.invoker().removeDealer(mDealer);
-            notifier.unregister();
         }
     }
 }
