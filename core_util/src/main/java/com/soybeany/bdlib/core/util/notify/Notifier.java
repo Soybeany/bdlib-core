@@ -119,11 +119,11 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             unregister();
         }
 
-        void register() {
+        synchronized void register() {
             MessageCenter.register(mExecutable, mKey, this);
         }
 
-        void unregister() {
+        synchronized void unregister() {
             MessageCenter.unregister(this);
             mDealers.clear(); // 清空集合，为新一轮作准备
         }
