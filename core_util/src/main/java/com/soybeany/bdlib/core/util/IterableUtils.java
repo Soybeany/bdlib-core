@@ -19,7 +19,6 @@ public class IterableUtils {
     /**
      * 进行遍历(具有返回值)
      */
-    @SuppressWarnings("unchecked")
     public static <T, R> R forEach(Iterable<T> iterable, R firstReturn, IReturnCallback<R, T> callback) {
         ReturnConsumer<R, T> consumer = new ReturnConsumer<>(firstReturn, callback);
         forEachInner(iterable, callback, consumer);

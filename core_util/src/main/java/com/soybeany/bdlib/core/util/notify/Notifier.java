@@ -1,7 +1,5 @@
 package com.soybeany.bdlib.core.util.notify;
 
-import com.soybeany.bdlib.core.java8.Optional;
-import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.file.FileUtils;
 import com.soybeany.bdlib.core.util.storage.IExecutable;
 
@@ -73,7 +71,9 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         @Override
         public synchronized void onCall(Object data) {
             if (data instanceof INotifyMsg) {
-                IterableUtils.forEach(mDealers, (dealer, flag) -> dealer.onCall((INotifyMsg) data));
+                for (IOnCallDealer dealer : mDealers) {
+                    dealer.onCall((INotifyMsg) data);
+                }
             }
         }
 
@@ -81,11 +81,15 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             if (mDealers.isEmpty()) {
                 MessageCenter.register(mExecutable, mKey, this);
             }
-            Optional.ofNullable(dealer).ifPresent(mDealers::add);
+            if (null != dealer) {
+                mDealers.add(dealer);
+            }
         }
 
         public synchronized void removeDealer(IOnCallDealer dealer) {
-            Optional.ofNullable(dealer).ifPresent(mDealers::remove);
+            if (null != dealer) {
+                mDealers.remove(dealer);
+            }
             if (mDealers.isEmpty()) {
                 MessageCenter.unregister(this);
             }
