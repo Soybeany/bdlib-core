@@ -90,7 +90,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         }
 
         @Override
-        public void onCall(Object data) {
+        public synchronized void onCall(Object data) {
             if (data instanceof INotifyMsg) {
                 IterableUtils.forEach(mDealers, (dealer, flag) -> dealer.onCall((INotifyMsg) data));
             } else if (data instanceof TempDealerMsg) {
@@ -99,11 +99,11 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             }
         }
 
-        public void addDealer(IOnCallDealer dealer) {
+        public synchronized void addDealer(IOnCallDealer dealer) {
             Optional.ofNullable(dealer).ifPresent(mDealers::add);
         }
 
-        public void removeDealer(IOnCallDealer dealer) {
+        public synchronized void removeDealer(IOnCallDealer dealer) {
             Optional.ofNullable(dealer).ifPresent(mDealers::remove);
         }
 
