@@ -83,7 +83,6 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         private final Set<IOnCallDealer> mDealers = new HashSet<>();
         private final IExecutable mExecutable;
         private final String mKey;
-        private final char[] mLock = new char[0];
 
         DealerFunc(IExecutable executable, String key) {
             mExecutable = (null != executable ? executable : IExecutable.MULTI_WORK_THREAD);
@@ -91,27 +90,21 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         }
 
         @Override
-        public void onCall(Object data) {
-            synchronized (mLock) {
-                if (data instanceof INotifyMsg) {
-                    IterableUtils.forEach(mDealers, (dealer, flag) -> dealer.onCall((INotifyMsg) data));
-                } else if (data instanceof TempDealerMsg) {
-                    TempDealerMsg dealerMsg = (TempDealerMsg) data;
-                    IterableUtils.forEach(dealerMsg.dealers, (dealer, flag) -> dealer.onCall(dealerMsg.msg));
-                }
+        public synchronized void onCall(Object data) {
+            if (data instanceof INotifyMsg) {
+                IterableUtils.forEach(mDealers, (dealer, flag) -> dealer.onCall((INotifyMsg) data));
+            } else if (data instanceof TempDealerMsg) {
+                TempDealerMsg dealerMsg = (TempDealerMsg) data;
+                IterableUtils.forEach(dealerMsg.dealers, (dealer, flag) -> dealer.onCall(dealerMsg.msg));
             }
         }
 
-        public void addDealer(IOnCallDealer dealer) {
-            synchronized (mLock) {
-                Optional.ofNullable(dealer).ifPresent(mDealers::add);
-            }
+        public synchronized void addDealer(IOnCallDealer dealer) {
+            Optional.ofNullable(dealer).ifPresent(mDealers::add);
         }
 
-        public void removeDealer(IOnCallDealer dealer) {
-            synchronized (mLock) {
-                Optional.ofNullable(dealer).ifPresent(mDealers::remove);
-            }
+        public synchronized void removeDealer(IOnCallDealer dealer) {
+            Optional.ofNullable(dealer).ifPresent(mDealers::remove);
         }
 
         public void notifyNow(Msg msg) {
@@ -121,22 +114,18 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         /**
          * 若在发送通知后就需要立刻注销，则使用此方法
          */
-        public void notifyAndUnregister(Msg msg) {
+        public synchronized void notifyAndUnregister(Msg msg) {
             MessageCenter.notifyNow(mKey, new TempDealerMsg(mDealers, msg));
             unregister();
         }
 
-        void register() {
-            synchronized (mLock) {
-                MessageCenter.register(mExecutable, mKey, this);
-            }
+        synchronized void register() {
+            MessageCenter.register(mExecutable, mKey, this);
         }
 
-        void unregister() {
-            synchronized (mLock) {
-                MessageCenter.unregister(this);
-                mDealers.clear(); // 清空集合，为新一轮作准备
-            }
+        synchronized void unregister() {
+            MessageCenter.unregister(this);
+            mDealers.clear(); // 清空集合，为新一轮作准备
         }
     }
 
