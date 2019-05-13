@@ -71,13 +71,12 @@ public class NotifyCall extends CallWrapper {
         }
 
         private void register(Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier) {
-            notifier.register();
             notifier.invoker().addDealer(mDealer);
             notifier.callback().notifyNow(mMsg.type(TYPE_ON_START));
         }
 
         private void unregister(Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier, RequestFinishReason reason) {
-            notifier.callback().notifyAndUnregister(mMsg.type(TYPE_ON_FINISH).data(reason));
+            notifier.callback().notifyNow(mMsg.type(TYPE_ON_FINISH).data(reason));
             notifier.invoker().removeDealer(mDealer);
         }
     }

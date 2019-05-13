@@ -5,19 +5,16 @@ import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.file.FileUtils;
 import com.soybeany.bdlib.core.util.storage.IExecutable;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
- * 通知者，需在合适的地方手动调用{@link #register}与{@link #unregister}
+ * 通知者，提供通知执行(invoker)与监听回调(callback)功能
  * <br>Created by Soybeany on 2019/5/11.
  */
 public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends INotifyMsg.Callback> {
     private final Invoker<InvokerMsg> mInvokerFunc;
     private final Callback<CallbackMsg> mCallbackFunc;
-    private final List<DealerFunc> mFuncList;
 
     public Notifier() {
         this(null);
@@ -29,27 +26,11 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
 
     public Notifier(IExecutable invoker, IExecutable callback) {
         String notifyKey = FileUtils.getUUID();
-        mFuncList = Arrays.asList(
-                mInvokerFunc = new Invoker<>(invoker, notifyKey),
-                mCallbackFunc = new Callback<>(callback, notifyKey)
-        );
+        mInvokerFunc = new Invoker<>(invoker, notifyKey);
+        mCallbackFunc = new Callback<>(callback, notifyKey);
     }
 
     // //////////////////////////////////方法区//////////////////////////////////
-
-    /**
-     * 进行注册
-     */
-    public void register() {
-        IterableUtils.forEach(mFuncList, (func, flag) -> func.register());
-    }
-
-    /**
-     * 进行注销
-     */
-    public void unregister() {
-        IterableUtils.forEach(mFuncList, (func, flag) -> func.unregister());
-    }
 
     /**
      * 使用主动的功能
@@ -93,49 +74,25 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         public synchronized void onCall(Object data) {
             if (data instanceof INotifyMsg) {
                 IterableUtils.forEach(mDealers, (dealer, flag) -> dealer.onCall((INotifyMsg) data));
-            } else if (data instanceof TempDealerMsg) {
-                TempDealerMsg dealerMsg = (TempDealerMsg) data;
-                IterableUtils.forEach(dealerMsg.dealers, (dealer, flag) -> dealer.onCall(dealerMsg.msg));
             }
         }
 
         public synchronized void addDealer(IOnCallDealer dealer) {
+            if (mDealers.isEmpty()) {
+                MessageCenter.register(mExecutable, mKey, this);
+            }
             Optional.ofNullable(dealer).ifPresent(mDealers::add);
         }
 
         public synchronized void removeDealer(IOnCallDealer dealer) {
             Optional.ofNullable(dealer).ifPresent(mDealers::remove);
+            if (mDealers.isEmpty()) {
+                MessageCenter.unregister(this);
+            }
         }
 
         public void notifyNow(Msg msg) {
             MessageCenter.notifyNow(mKey, msg);
-        }
-
-        /**
-         * 若在发送通知后就需要立刻注销，则使用此方法
-         */
-        public synchronized void notifyAndUnregister(Msg msg) {
-            MessageCenter.notifyNow(mKey, new TempDealerMsg(mDealers, msg));
-            unregister();
-        }
-
-        synchronized void register() {
-            MessageCenter.register(mExecutable, mKey, this);
-        }
-
-        synchronized void unregister() {
-            MessageCenter.unregister(this);
-            mDealers.clear(); // 清空集合，为新一轮作准备
-        }
-    }
-
-    private static class TempDealerMsg {
-        final Set<IOnCallDealer> dealers = new HashSet<>();
-        INotifyMsg msg;
-
-        TempDealerMsg(Set<IOnCallDealer> dealers, INotifyMsg msg) {
-            this.dealers.addAll(dealers);
-            this.msg = msg;
         }
     }
 }
