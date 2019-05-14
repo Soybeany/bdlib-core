@@ -6,7 +6,6 @@ import com.soybeany.bdlib.core.util.storage.IExecutable;
 import com.soybeany.bdlib.core.util.storage.KeySetStorage;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -82,16 +81,11 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             }
             mIsNotifying = true;
             // 回调并检测dealer的移除意向
-            DEALERS.invoke(mKey, dealers -> {
-                Iterator<IOnCallDealer> iterator = dealers.iterator();
-                while (iterator.hasNext()) {
-                    IOnCallDealer dealer = iterator.next();
-                    dealer.onCall((INotifyMsg) data);
-                    if (mToBeRemove.remove(dealer)) {
-                        iterator.remove();
-                    }
-                }
-            });
+            DEALERS.invokeVal(mKey, dealer -> dealer.onCall((INotifyMsg) data));
+            for (IOnCallDealer dealer : mToBeRemove) {
+                removeDealer(dealer);
+            }
+            mToBeRemove.clear();
             mIsNotifying = false;
         }
 
