@@ -34,10 +34,11 @@ public class KeyValueStorage<Key, Value> {
 
     public Value get(Key key, Supplier<? extends Value> other) {
         Value value = get(key);
-        if (null == value) {
-            putIfAbsent(key, value = other.get());
+        if (null != value) {
+            return value;
         }
-        return value;
+        putIfAbsent(key, other.get());
+        return get(key);
     }
 
     public boolean containKey(Key key) {
