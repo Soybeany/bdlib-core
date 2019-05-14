@@ -1,5 +1,6 @@
 package com.soybeany.bdlib.core.util.notify;
 
+import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.file.FileUtils;
 import com.soybeany.bdlib.core.util.storage.IExecutable;
 
@@ -61,6 +62,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
 
     private static class DealerFunc<Msg extends INotifyMsg> implements MessageCenter.ICallback {
         private final Set<IOnCallDealer> mDealers = new HashSet<>();
+        private final Set<IOnCallDealer> mToBeRemove = new HashSet<>(); // 待删除列表
         private final IExecutable mExecutable;
         private final String mKey;
 
@@ -79,28 +81,33 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             while (iterator.hasNext()) {
                 IOnCallDealer dealer = iterator.next();
                 dealer.onCall((INotifyMsg) data);
-                if (dealer.needToBeRemoved()) {
+                if (mToBeRemove.remove(dealer)) {
                     iterator.remove();
                 }
             }
         }
 
         public synchronized void addDealer(IOnCallDealer dealer) {
+            // 还没注册监听则进行监听
             if (mDealers.isEmpty()) {
                 MessageCenter.register(mExecutable, mKey, this);
             }
-            if (null != dealer) {
-                mDealers.add(dealer);
-            }
+            Optional.ofNullable(dealer).ifPresent(mDealers::add);
         }
 
         public synchronized void removeDealer(IOnCallDealer dealer) {
-            if (null != dealer) {
-                mDealers.remove(dealer);
-            }
+            Optional.ofNullable(dealer).ifPresent(mDealers::remove);
+            // 没有处理者则不再注销监听
             if (mDealers.isEmpty()) {
                 MessageCenter.unregister(this);
             }
+        }
+
+        /**
+         * 延迟移除(延迟到{@link #onCall(Object)}后才进行删除)
+         */
+        public synchronized void delayRemoveDealer(IOnCallDealer dealer) {
+            Optional.ofNullable(dealer).filter(mDealers::contains).ifPresent(mToBeRemove::add);
         }
 
         public void notifyNow(Msg msg) {
