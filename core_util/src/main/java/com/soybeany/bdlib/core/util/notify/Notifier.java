@@ -3,6 +3,7 @@ package com.soybeany.bdlib.core.util.notify;
 import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.file.FileUtils;
 import com.soybeany.bdlib.core.util.storage.IExecutable;
+import com.soybeany.bdlib.core.util.storage.KeySetStorage;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,10 +62,13 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
     }
 
     private static class DealerFunc<Msg extends INotifyMsg> implements MessageCenter.ICallback {
-        private final Set<IOnCallDealer> mDealers = new HashSet<>();
+        private static final KeySetStorage<String, IOnCallDealer> DEALERS = new KeySetStorage<>();
+
         private final Set<IOnCallDealer> mToBeRemove = new HashSet<>(); // 待删除列表
         private final IExecutable mExecutable;
         private final String mKey;
+
+        private boolean mIsNotifying; // 是否正在执行onCall
 
         DealerFunc(IExecutable executable, String key) {
             mExecutable = (null != executable ? executable : IExecutable.MULTI_WORK_THREAD);
@@ -76,29 +80,33 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             if (!(data instanceof INotifyMsg)) {
                 return;
             }
+            mIsNotifying = true;
             // 回调并检测dealer的移除意向
-            Iterator<IOnCallDealer> iterator = mDealers.iterator();
-            while (iterator.hasNext()) {
-                IOnCallDealer dealer = iterator.next();
-                dealer.onCall((INotifyMsg) data);
-                if (mToBeRemove.remove(dealer)) {
-                    iterator.remove();
+            DEALERS.invoke(mKey, dealers -> {
+                Iterator<IOnCallDealer> iterator = dealers.iterator();
+                while (iterator.hasNext()) {
+                    IOnCallDealer dealer = iterator.next();
+                    dealer.onCall((INotifyMsg) data);
+                    if (mToBeRemove.remove(dealer)) {
+                        iterator.remove();
+                    }
                 }
-            }
+            });
+            mIsNotifying = false;
         }
 
         public synchronized void addDealer(IOnCallDealer dealer) {
             // 还没注册监听则进行监听
-            if (mDealers.isEmpty()) {
+            if (!DEALERS.containKey(mKey)) {
                 MessageCenter.register(mExecutable, mKey, this);
             }
-            Optional.ofNullable(dealer).ifPresent(mDealers::add);
+            Optional.ofNullable(dealer).ifPresent(d -> DEALERS.putVal(mKey, d));
         }
 
         public synchronized void removeDealer(IOnCallDealer dealer) {
-            Optional.ofNullable(dealer).ifPresent(mDealers::remove);
+            Optional.ofNullable(dealer).ifPresent(d -> DEALERS.removeVal(mKey, d));
             // 没有处理者则不再注销监听
-            if (mDealers.isEmpty()) {
+            if (!DEALERS.containKey(mKey)) {
                 MessageCenter.unregister(this);
             }
         }
@@ -107,7 +115,9 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
          * 延迟移除(延迟到{@link #onCall(Object)}后才进行删除)
          */
         public synchronized void delayRemoveDealer(IOnCallDealer dealer) {
-            Optional.ofNullable(dealer).filter(mDealers::contains).ifPresent(mToBeRemove::add);
+            if (mIsNotifying) {
+                Optional.ofNullable(dealer).filter(d -> DEALERS.containVal(mKey, d)).ifPresent(mToBeRemove::add);
+            }
         }
 
         public void notifyNow(Msg msg) {
