@@ -1,6 +1,7 @@
 package com.soybeany.bdlib.core.util.storage;
 
 import com.soybeany.bdlib.core.java8.function.Consumer;
+import com.soybeany.bdlib.core.java8.function.Supplier;
 
 import java.util.Collection;
 import java.util.Enumeration;
@@ -29,6 +30,14 @@ public class KeyValueStorage<Key, Value> {
 
     public Value get(Key key) {
         return mMap.get(key);
+    }
+
+    public Value get(Key key, Supplier<? extends Value> other) {
+        Value value = get(key);
+        if (null == value) {
+            putIfAbsent(key, value = other.get());
+        }
+        return value;
     }
 
     public boolean containKey(Key key) {
