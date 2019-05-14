@@ -80,13 +80,14 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
                 return;
             }
             mIsNotifying = true;
-            // 回调并检测dealer的移除意向
+            // 回调并收集dealer的移除意向
             DEALERS.invokeVal(mKey, dealer -> dealer.onCall((INotifyMsg) data));
+            mIsNotifying = false;
+            // 执行移除操作
             for (IOnCallDealer dealer : mToBeRemove) {
                 removeDealer(dealer);
             }
             mToBeRemove.clear();
-            mIsNotifying = false;
         }
 
         public synchronized void addDealer(IOnCallDealer dealer) {
