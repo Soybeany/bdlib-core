@@ -4,6 +4,7 @@ import com.soybeany.bdlib.core.util.file.FileUtils;
 import com.soybeany.bdlib.core.util.storage.IExecutable;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -70,9 +71,16 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
 
         @Override
         public synchronized void onCall(Object data) {
-            if (data instanceof INotifyMsg) {
-                for (IOnCallDealer dealer : mDealers) {
-                    dealer.onCall((INotifyMsg) data);
+            if (!(data instanceof INotifyMsg)) {
+                return;
+            }
+            // 回调并检测dealer的移除意向
+            Iterator<IOnCallDealer> iterator = mDealers.iterator();
+            while (iterator.hasNext()) {
+                IOnCallDealer dealer = iterator.next();
+                dealer.onCall((INotifyMsg) data);
+                if (dealer.needToBeRemoved()) {
+                    iterator.remove();
                 }
             }
         }
