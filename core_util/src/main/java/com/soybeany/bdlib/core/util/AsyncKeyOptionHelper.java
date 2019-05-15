@@ -1,6 +1,7 @@
 package com.soybeany.bdlib.core.util;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * <br>Created by Soybeany on 2019/2/2.
@@ -9,7 +10,7 @@ public class AsyncKeyOptionHelper {
 
     private static AsyncKeyOptionHelper INSTANCE = getNew();
 
-    private ConcurrentHashMap<String, String> mKeyMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, String> mKeyMap = new ConcurrentHashMap<>();
 
     public static AsyncKeyOptionHelper getGlobal() {
         return INSTANCE;

@@ -4,17 +4,16 @@ import com.soybeany.bdlib.core.java8.function.Consumer;
 import com.soybeany.bdlib.core.java8.function.Supplier;
 
 import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Key-Value存储器
  * <br>Created by Soybeany on 2019/4/11.
  */
 public class KeyValueStorage<Key, Value> {
-    private final ConcurrentHashMap<Key, Value> mMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Key, Value> mMap = new ConcurrentHashMap<>();
 
     public void put(Key key, Value value) {
         mMap.put(key, value);
@@ -54,12 +53,7 @@ public class KeyValueStorage<Key, Value> {
     }
 
     public Set<Key> keys() {
-        HashSet<Key> set = new HashSet<>();
-        Enumeration<Key> keys = mMap.keys();
-        while (keys.hasMoreElements()) {
-            set.add(keys.nextElement());
-        }
-        return set;
+        return mMap.keySet();
     }
 
     public Collection<Value> values() {
