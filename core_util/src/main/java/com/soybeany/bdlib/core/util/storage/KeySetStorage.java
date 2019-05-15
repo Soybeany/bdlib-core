@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Key-Set存储器
@@ -93,7 +94,7 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
 class ConcurrentHashSet<T> extends AbstractSet<T> implements Set<T> {
     private static final Object PRESENT = new Object();
 
-    private ConcurrentHashMap<T, Object> mMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<T, Object> mMap = new ConcurrentHashMap<>();
 
     @Override
     public int size() {
