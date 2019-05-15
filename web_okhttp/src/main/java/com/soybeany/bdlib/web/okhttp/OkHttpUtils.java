@@ -61,7 +61,7 @@ public class OkHttpUtils {
     }
 
     public interface RequestGetter {
-        Request getRequest(Notifier notifier);
+        Request getRequest(Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier);
 
         default Notifier<RequestInvokerMsg, RequestCallbackMsg> getNewNotifier() {
             return new Notifier<>();
