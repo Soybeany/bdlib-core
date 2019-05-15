@@ -3,15 +3,18 @@ package com.soybeany.bdlib.core.util.storage;
 import com.soybeany.bdlib.core.java8.function.Consumer;
 import com.soybeany.bdlib.core.util.IterableUtils;
 
+import java.util.AbstractSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Key-Set存储器
  * <br>Created by Soybeany on 2019/4/13.
  */
 public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> {
-    private final Set<IKeyRemoveListener<Key>> mRemoveListeners = new HashSet<>();
+    private final Set<IKeyRemoveListener<Key>> mRemoveListeners = new ConcurrentHashSet<>();
     private final ISetProvider<Value> mProvider;
 
     public KeySetStorage() {
@@ -81,5 +84,51 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
      */
     public interface IKeyRemoveListener<Key> {
         void onRemoved(Key key);
+    }
+}
+
+/**
+ * 并发Set
+ */
+class ConcurrentHashSet<T> extends AbstractSet<T> implements Set<T> {
+    private static final Object PRESENT = new Object();
+
+    private ConcurrentHashMap<T, Object> mMap = new ConcurrentHashMap<>();
+
+    @Override
+    public int size() {
+        return mMap.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return mMap.isEmpty();
+    }
+
+    @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
+    public boolean contains(Object o) {
+        return mMap.containsKey(o);
+    }
+
+    @Override
+    @SuppressWarnings("NullableProblems")
+    public Iterator<T> iterator() {
+        return mMap.keySet().iterator();
+    }
+
+    @Override
+    public boolean add(T t) {
+        return mMap.putIfAbsent(t, PRESENT) == null;
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        return mMap.remove(o) == PRESENT;
+    }
+
+    @Override
+    public void clear() {
+        mMap.clear();
     }
 }

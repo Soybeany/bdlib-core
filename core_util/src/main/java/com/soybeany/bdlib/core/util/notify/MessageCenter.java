@@ -26,7 +26,7 @@ public class MessageCenter {
         });
     }
 
-    public static synchronized void register(IExecutable holder, String key, ICallback callback) {
+    public static void register(IExecutable holder, String key, ICallback callback) {
         // 若没有强回调，不能注册弱回调
         if (callback instanceof IWeekCallback && !CALLBACK_STORAGE.containKey(key)) {
             return;
@@ -84,7 +84,7 @@ public class MessageCenter {
         });
     }
 
-    private static synchronized void removeRecords(Set<Info> infoSet) {
+    private static void removeRecords(Set<Info> infoSet) {
         for (Info info : infoSet) {
             CALLBACK_STORAGE.removeVal(info.key, info);
             WEEK_CALLBACK_STORAGE.removeVal(info.key, info);
