@@ -28,7 +28,10 @@ public class CountingRequestBody extends RequestBody {
 
     public CountingRequestBody(RequestBody delegate, List<IProgressListener> listeners, Notifier<RequestInvokerMsg, RequestCallbackMsg> notifier) {
         mDelegate = delegate;
-        mRecorder = new ProgressRecorder().add(listeners.toArray(new IProgressListener[0]));
+        mRecorder = new ProgressRecorder();
+        for (IProgressListener listener : listeners) {
+            mRecorder.add(listener);
+        }
         Optional.ofNullable(notifier).ifPresent(n -> mRecorder.add(new NotifyListener(n, RequestCallbackMsg.TYPE_ON_UPLOAD)));
     }
 
