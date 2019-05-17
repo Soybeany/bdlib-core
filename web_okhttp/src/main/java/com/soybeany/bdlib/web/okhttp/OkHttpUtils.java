@@ -62,7 +62,7 @@ public class OkHttpUtils {
         Request getRequest(RequestNotifier notifier);
 
         default RequestNotifier getNewNotifier() {
-            return RequestNotifier.getNew();
+            return new RequestNotifier();
         }
     }
 }

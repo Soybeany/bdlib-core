@@ -61,9 +61,9 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
     }
 
     private static class DealerFunc<Msg extends INotifyMsg> implements MessageCenter.ICallback {
-        private static final KeySetStorage<String, IOnCallDealer> DEALERS = new KeySetStorage<>();
+        private static final KeySetStorage<String, IOnCallListener> DEALERS = new KeySetStorage<>();
 
-        private final Set<IOnCallDealer> mToBeRemove = new HashSet<>(); // 待删除列表
+        private final Set<IOnCallListener> mToBeRemove = new HashSet<>(); // 待删除列表
         private final IExecutable mExecutable;
         private final String mKey;
 
@@ -80,32 +80,32 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
                 return;
             }
             mIsNotifying = true;
-            // 回调并收集dealer的移除意向
-            DEALERS.invokeVal(mKey, dealer -> dealer.onCall((INotifyMsg) data));
+            // 回调并收集listener的移除意向
+            DEALERS.invokeVal(mKey, listener -> listener.onCall((INotifyMsg) data));
             mIsNotifying = false;
             // 执行移除操作
-            for (IOnCallDealer dealer : mToBeRemove) {
-                removeDealer(dealer);
+            for (IOnCallListener listener : mToBeRemove) {
+                removeListener(listener);
             }
             mToBeRemove.clear();
         }
 
-        public synchronized void addDealer(IOnCallDealer dealer) {
-            if (null == dealer) {
+        public synchronized void addListener(IOnCallListener listener) {
+            if (!checkListener(listener)) {
                 return;
             }
             // 还没注册监听则进行监听
             if (!DEALERS.containKey(mKey)) {
                 MessageCenter.register(mExecutable, mKey, this);
             }
-            DEALERS.putVal(mKey, dealer);
+            DEALERS.putVal(mKey, listener);
         }
 
-        public synchronized void removeDealer(IOnCallDealer dealer) {
-            if (null == dealer) {
+        public synchronized void removeListener(IOnCallListener listener) {
+            if (!checkListener(listener)) {
                 return;
             }
-            DEALERS.removeVal(mKey, dealer);
+            DEALERS.removeVal(mKey, listener);
             // 没有处理者则不再注销监听
             if (!DEALERS.containKey(mKey)) {
                 MessageCenter.unregister(this);
@@ -115,14 +115,29 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         /**
          * 延迟移除(延迟到{@link #onCall(Object)}后才进行删除)
          */
-        public synchronized void delayRemoveDealer(IOnCallDealer dealer) {
+        public synchronized void delayRemoveDealer(IOnCallListener listener) {
             if (mIsNotifying) {
-                Optional.ofNullable(dealer).filter(d -> DEALERS.containVal(mKey, d)).ifPresent(mToBeRemove::add);
+                Optional.ofNullable(listener).filter(d -> DEALERS.containVal(mKey, d)).ifPresent(mToBeRemove::add);
             }
         }
 
         public void notifyNow(Msg msg) {
             MessageCenter.notifyNow(mKey, msg);
+        }
+
+        /**
+         * @return 是否通过验证
+         */
+        private boolean checkListener(IOnCallListener listener) {
+            if (null == listener) {
+                System.out.println("listener为null");
+                return false;
+            }
+            if (mIsNotifying) {
+                System.out.println("不能在遍历通知中变更监听者");
+                return true;
+            }
+            return true;
         }
     }
 }
