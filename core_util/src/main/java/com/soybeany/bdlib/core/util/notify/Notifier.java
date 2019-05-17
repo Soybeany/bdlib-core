@@ -91,15 +91,21 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         }
 
         public synchronized void addDealer(IOnCallDealer dealer) {
+            if (null == dealer) {
+                return;
+            }
             // 还没注册监听则进行监听
             if (!DEALERS.containKey(mKey)) {
                 MessageCenter.register(mExecutable, mKey, this);
             }
-            Optional.ofNullable(dealer).ifPresent(d -> DEALERS.putVal(mKey, d));
+            DEALERS.putVal(mKey, dealer);
         }
 
         public synchronized void removeDealer(IOnCallDealer dealer) {
-            Optional.ofNullable(dealer).ifPresent(d -> DEALERS.removeVal(mKey, d));
+            if (null == dealer) {
+                return;
+            }
+            DEALERS.removeVal(mKey, dealer);
             // 没有处理者则不再注销监听
             if (!DEALERS.containKey(mKey)) {
                 MessageCenter.unregister(this);
