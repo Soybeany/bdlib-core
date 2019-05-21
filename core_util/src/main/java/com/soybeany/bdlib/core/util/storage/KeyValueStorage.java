@@ -48,6 +48,10 @@ public class KeyValueStorage<Key, Value> {
         return mMap.containsValue(value);
     }
 
+    public boolean isEmpty() {
+        return mMap.isEmpty();
+    }
+
     public void clear() {
         mMap.clear();
     }
