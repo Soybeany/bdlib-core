@@ -26,8 +26,8 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
 
     public Notifier(IExecutable invoker, IExecutable callback) {
         String notifyKey = FileUtils.getUUID();
-        mInvokerFunc = new Invoker<>(invoker, notifyKey);
-        mCallbackFunc = new Callback<>(callback, notifyKey);
+        mInvokerFunc = getNewInvoker(invoker, notifyKey);
+        mCallbackFunc = getNewCallback(callback, notifyKey);
     }
 
     // //////////////////////////////////方法区//////////////////////////////////
@@ -35,15 +35,23 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
     /**
      * 使用主动的功能
      */
-    public Invoker<InvokerMsg> invoker() {
+    public final Invoker<InvokerMsg> invoker() {
         return mInvokerFunc;
     }
 
     /**
      * 使用回调的功能
      */
-    public Callback<CallbackMsg> callback() {
+    public final Callback<CallbackMsg> callback() {
         return mCallbackFunc;
+    }
+
+    protected Invoker<InvokerMsg> getNewInvoker(IExecutable executable, String key) {
+        return new Invoker<>(executable, key);
+    }
+
+    protected Callback<CallbackMsg> getNewCallback(IExecutable executable, String key) {
+        return new Callback<>(executable, key);
     }
 
     // //////////////////////////////////内部类区//////////////////////////////////
