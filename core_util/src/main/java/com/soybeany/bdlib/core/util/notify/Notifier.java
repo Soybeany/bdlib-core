@@ -99,7 +99,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         }
 
         public boolean hasListener() {
-            return !DEALERS.isEmpty();
+            return DEALERS.containKey(mKey);
         }
 
         public synchronized void clearListeners() {
@@ -114,7 +114,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
                 return;
             }
             // 还没注册监听则进行监听
-            if (!DEALERS.containKey(mKey)) {
+            if (!hasListener()) {
                 MessageCenter.register(mExecutable, mKey, this);
             }
             DEALERS.putVal(mKey, listener);
@@ -126,7 +126,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             }
             DEALERS.removeVal(mKey, listener);
             // 没有处理者则不再注销监听
-            if (!DEALERS.containKey(mKey)) {
+            if (!hasListener()) {
                 MessageCenter.unregister(this);
             }
         }
