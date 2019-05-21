@@ -26,25 +26,26 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
         mProvider = provider;
     }
 
-    public void putVal(Key key, Value value) {
+    public boolean putVal(Key key, Value value) {
         Set<Value> set = get(key);
         if (null == set) {
             putIfAbsent(key, mProvider.getNewSet());
             set = get(key);
         }
-        set.add(value);
+        return set.add(value);
     }
 
-    public void removeVal(Key key, Value value) {
+    public boolean removeVal(Key key, Value value) {
         Set<Value> set = get(key);
         if (null == set) {
-            return;
+            return false;
         }
-        set.remove(value);
+        boolean removed = set.remove(value);
         if (set.isEmpty()) {
             remove(key);
             IterableUtils.forEach(mRemoveListeners, (listener, flag) -> listener.onRemoved(key));
         }
+        return removed;
     }
 
     public boolean containVal(Key key, Value value) {
@@ -62,12 +63,12 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
         invokeAll(set -> innerInvoke(set, consumer));
     }
 
-    public void addKeyRemoveListener(IKeyRemoveListener<Key> listener) {
-        mRemoveListeners.add(listener);
+    public boolean addKeyRemoveListener(IKeyRemoveListener<Key> listener) {
+        return mRemoveListeners.add(listener);
     }
 
-    public void removeKeyRemoveListener(IKeyRemoveListener<Key> listener) {
-        mRemoveListeners.remove(listener);
+    public boolean removeKeyRemoveListener(IKeyRemoveListener<Key> listener) {
+        return mRemoveListeners.remove(listener);
     }
 
     private void innerInvoke(Set<Value> set, Consumer<Value> consumer) {

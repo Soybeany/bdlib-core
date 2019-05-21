@@ -15,15 +15,15 @@ import java.util.concurrent.ConcurrentMap;
 public class KeyValueStorage<Key, Value> {
     private final ConcurrentMap<Key, Value> mMap = new ConcurrentHashMap<>();
 
-    public void put(Key key, Value value) {
-        mMap.put(key, value);
+    public Value put(Key key, Value value) {
+        return mMap.put(key, value);
     }
 
-    public void putIfAbsent(Key key, Value value) {
-        mMap.putIfAbsent(key, value);
+    public Value putIfAbsent(Key key, Value value) {
+        return mMap.putIfAbsent(key, value);
     }
 
-    public Object remove(Key key) {
+    public Value remove(Key key) {
         return mMap.remove(key);
     }
 
