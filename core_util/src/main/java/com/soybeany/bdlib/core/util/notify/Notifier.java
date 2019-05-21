@@ -49,13 +49,13 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
     // //////////////////////////////////内部类区//////////////////////////////////
 
     public static class Invoker<Msg extends INotifyMsg.Invoker> extends DealerFunc<Msg> {
-        Invoker(IExecutable executable, String key) {
+        protected Invoker(IExecutable executable, String key) {
             super(executable, "invoker:" + key);
         }
     }
 
     public static class Callback<Msg extends INotifyMsg.Callback> extends DealerFunc<Msg> {
-        Callback(IExecutable executable, String key) {
+        protected Callback(IExecutable executable, String key) {
             super(executable, "callback:" + key);
         }
     }
