@@ -60,21 +60,11 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         public Invoker(IExecutable executable, String key) {
             super(executable, "invoker:" + key);
         }
-
-        @Override
-        public synchronized void setListener(IOnCallListener listener) {
-            super.setListener(listener);
-        }
     }
 
     public static class Callback<Msg extends INotifyMsg.Callback> extends DealerFunc<Msg> {
         public Callback(IExecutable executable, String key) {
             super(executable, "callback:" + key);
-        }
-
-        @Override
-        public synchronized void addListener(IOnCallListener listener) {
-            super.addListener(listener);
         }
     }
 
@@ -119,14 +109,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             DEALERS.invokeAllVal(this::removeListener);
         }
 
-        protected synchronized void setListener(IOnCallListener listener) {
-            if (hasListener()) {
-                clearListeners();
-            }
-            addListener(listener);
-        }
-
-        protected synchronized void addListener(IOnCallListener listener) {
+        public synchronized void addListener(IOnCallListener listener) {
             if (isOptionIllegal(listener)) {
                 return;
             }

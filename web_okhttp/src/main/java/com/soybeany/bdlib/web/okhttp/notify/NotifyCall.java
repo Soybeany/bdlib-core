@@ -70,7 +70,7 @@ public class NotifyCall extends CallWrapper {
         }
 
         private void register(RequestNotifier notifier) {
-            notifier.invoker().setListener(mListener);
+            notifier.invoker().addListener(mListener);
             notifier.callback().notifyNow(mMsg.type(TYPE_ON_START));
         }
 
