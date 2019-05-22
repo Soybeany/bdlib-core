@@ -58,10 +58,6 @@ public class CallWrapper implements Call {
     @Override
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     public Call clone() {
-        return new CallWrapper(cloneTarget());
-    }
-
-    protected Call cloneTarget() {
-        return mTarget.clone();
+        return new CallWrapper(mTarget.clone());
     }
 }

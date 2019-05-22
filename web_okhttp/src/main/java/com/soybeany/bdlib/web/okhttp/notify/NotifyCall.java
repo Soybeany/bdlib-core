@@ -2,7 +2,6 @@ package com.soybeany.bdlib.web.okhttp.notify;
 
 import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.notify.IOnCallListener;
-import com.soybeany.bdlib.web.okhttp.core.CallWrapper;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpCallback;
 
 import java.io.IOException;
@@ -19,10 +18,11 @@ import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.ERROR;
 import static com.soybeany.bdlib.web.okhttp.notify.RequestFinishReason.NORM;
 
 /**
+ * 添加Notifier功能
  * <br>Created by Soybeany on 2019/5/7.
  */
 @EverythingIsNonNull
-public class NotifyCall extends CallWrapper {
+public class NotifyCall extends FastFailCall {
     private final RequestNotifier mNotifier;
 
     public NotifyCall(Call target, RequestNotifier notifier) {
@@ -40,7 +40,7 @@ public class NotifyCall extends CallWrapper {
 
     @Override
     public Call clone() {
-        return new NotifyCall(cloneTarget(), mNotifier);
+        return new NotifyCall(super.clone(), mNotifier);
     }
 
     public RequestNotifier getNotifier() {
