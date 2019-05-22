@@ -110,7 +110,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         }
 
         public synchronized void addListener(IOnCallListener listener) {
-            if (isOptionIllegal(listener)) {
+            if (isOptionIllegal(listener, null)) {
                 return;
             }
             // 还没注册监听则进行监听
@@ -121,7 +121,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         }
 
         public synchronized void removeListener(IOnCallListener listener) {
-            if (isOptionIllegal(listener)) {
+            if (isOptionIllegal(listener, () -> delayRemoveDealer(listener))) {
                 return;
             }
             DEALERS.removeVal(mKey, listener);
@@ -147,16 +147,23 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
         /**
          * @return 是否为非法操作
          */
-        private boolean isOptionIllegal(IOnCallListener listener) {
+        private boolean isOptionIllegal(IOnCallListener listener, Runnable onNotifying) {
+            // 输入限制
             if (null == listener) {
                 System.out.println("listener为null");
                 return true;
             }
-            if (mIsNotifying) {
-                System.out.println("不能在遍历通知中变更监听者");
-                return true;
+            // 遍历限制
+            if (!mIsNotifying) {
+                return false;
             }
-            return false;
+            // 遍历限制补偿
+            if (null != onNotifying) {
+                onNotifying.run();
+            } else {
+                System.out.println("不能在遍历通知中变更监听者");
+            }
+            return true;
         }
     }
 }
