@@ -2,6 +2,7 @@ package com.soybeany.bdlib.web.okhttp.notify;
 
 import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.notify.IOnCallListener;
+import com.soybeany.bdlib.web.okhttp.core.FastFailCall;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpCallback;
 
 import java.io.IOException;

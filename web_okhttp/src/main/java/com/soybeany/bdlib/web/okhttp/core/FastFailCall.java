@@ -1,6 +1,4 @@
-package com.soybeany.bdlib.web.okhttp.notify;
-
-import com.soybeany.bdlib.web.okhttp.core.CallWrapper;
+package com.soybeany.bdlib.web.okhttp.core;
 
 import java.io.IOException;
 
@@ -10,7 +8,7 @@ import okhttp3.Response;
 import okhttp3.internal.annotations.EverythingIsNonNull;
 
 /**
- * 添加快速失败功能
+ * 添加快速失败功能，避免请求取消时，偶尔回调过慢的问题
  * <br>Created by Soybeany on 2019/5/22.
  */
 @EverythingIsNonNull
