@@ -1,9 +1,11 @@
 package com.soybeany.bdlib.web.okhttp.core;
 
+import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.counting.CountingRequestBody;
 import com.soybeany.bdlib.web.okhttp.notify.RequestNotifier;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -75,6 +77,14 @@ public class OkHttpRequestFactory {
             return mOriginalBuilder.build();
         }
 
+        protected static void obj2Param(Map<String, String> param, Object obj) {
+            if (null == obj) {
+                return;
+            }
+            IterableUtils.forEach(Arrays.asList(obj.getClass().getFields()),
+                    (field, flag) -> param.put(field.getName(), field.get(obj).toString()));
+        }
+
         protected abstract void onBuild(String url, Request.Builder builder, RequestNotifier notifier);
     }
 
@@ -132,6 +142,14 @@ public class OkHttpRequestFactory {
             mParams.put(key, value);
             return this;
         }
+
+        /**
+         * 使用对象的public字段及值
+         */
+        public GetBuilder params(Object obj) {
+            obj2Param(mParams, obj);
+            return this;
+        }
     }
 
     public static class PostFormBuilder extends PostBuilder {
@@ -155,6 +173,14 @@ public class OkHttpRequestFactory {
          */
         public PostFormBuilder param(String key, String value) {
             mParams.put(key, value);
+            return this;
+        }
+
+        /**
+         * 使用对象的public字段及值
+         */
+        public PostFormBuilder params(Object obj) {
+            obj2Param(mParams, obj);
             return this;
         }
     }
