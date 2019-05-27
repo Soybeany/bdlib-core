@@ -2,13 +2,13 @@ package com.soybeany.bdlib.web.okhttp;
 
 import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.IterableUtils;
+import com.soybeany.bdlib.web.okhttp.core.FastFailCall;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpClientFactory;
-import com.soybeany.bdlib.web.okhttp.notify.NotifyCall;
-import com.soybeany.bdlib.web.okhttp.notify.RequestNotifier;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
@@ -18,7 +18,7 @@ import okhttp3.Request;
  */
 public class OkHttpUtils {
 
-    public static ClientPart newDefaultClient() {
+    public static ClientPart newClient() {
         return new ClientPart();
     }
 
@@ -52,17 +52,12 @@ public class OkHttpUtils {
             mClient = client;
         }
 
-        public NotifyCall newCall(RequestGetter getter) {
-            RequestNotifier notifier = getter.getNewNotifier();
-            return new NotifyCall(mClient.newCall(getter.getRequest(notifier)), notifier);
+        public Call newCall(Request request) {
+            return new FastFailCall(getNewCall(request));
         }
-    }
 
-    public interface RequestGetter {
-        Request getRequest(RequestNotifier notifier);
-
-        default RequestNotifier getNewNotifier() {
-            return new RequestNotifier();
+        protected Call getNewCall(Request request) {
+            return mClient.newCall(request);
         }
     }
 }

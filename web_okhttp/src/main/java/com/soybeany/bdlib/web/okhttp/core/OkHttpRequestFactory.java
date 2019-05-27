@@ -3,7 +3,6 @@ package com.soybeany.bdlib.web.okhttp.core;
 import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.counting.CountingRequestBody;
-import com.soybeany.bdlib.web.okhttp.notify.RequestNotifier;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -72,8 +71,8 @@ public class OkHttpRequestFactory {
         /**
          * 构造请求
          */
-        public Request build(RequestNotifier notifier) {
-            onBuild(mUrl, mOriginalBuilder, notifier);
+        public Request build() {
+            onBuild(mUrl, mOriginalBuilder);
             return mOriginalBuilder.build();
         }
 
@@ -85,7 +84,7 @@ public class OkHttpRequestFactory {
                     (field, flag) -> param.put(field.getName(), field.get(obj).toString()));
         }
 
-        protected abstract void onBuild(String url, Request.Builder builder, RequestNotifier notifier);
+        protected abstract void onBuild(String url, Request.Builder builder);
     }
 
     /**
@@ -93,6 +92,7 @@ public class OkHttpRequestFactory {
      */
     public abstract static class PostBuilder extends BasicBuilder {
         private final List<IProgressListener> mUploadListeners = new LinkedList<>(); // 上传监听器
+        private ICountingRequestBodyProvider mProvider = CountingRequestBody::new;
 
         public PostBuilder(String url) {
             super(url);
@@ -114,10 +114,15 @@ public class OkHttpRequestFactory {
             return this;
         }
 
+        public PostBuilder provider(ICountingRequestBodyProvider provider) {
+            mProvider = provider;
+            return this;
+        }
+
         @Override
-        protected void onBuild(String url, Request.Builder builder, RequestNotifier notifier) {
+        protected void onBuild(String url, Request.Builder builder) {
             RequestBody body = getRequestBody();
-            builder.post(!mUploadListeners.isEmpty() ? new CountingRequestBody(body, mUploadListeners, notifier) : body);
+            builder.post(!mUploadListeners.isEmpty() ? mProvider.getNewCountingRequestBody(body, mUploadListeners) : body);
         }
 
         protected abstract RequestBody getRequestBody();
@@ -131,7 +136,7 @@ public class OkHttpRequestFactory {
         }
 
         @Override
-        protected void onBuild(String url, Request.Builder builder, RequestNotifier notifier) {
+        protected void onBuild(String url, Request.Builder builder) {
             builder.url(URLParser.mergeUrl(url, mParams));
         }
 
@@ -183,5 +188,9 @@ public class OkHttpRequestFactory {
             obj2Param(mParams, obj);
             return this;
         }
+    }
+
+    public interface ICountingRequestBodyProvider {
+        CountingRequestBody getNewCountingRequestBody(RequestBody body, List<IProgressListener> listeners);
     }
 }

@@ -1,11 +1,8 @@
 package com.soybeany.bdlib.web.okhttp.counting;
 
 
-import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.core.util.file.ProgressRecorder;
-import com.soybeany.bdlib.web.okhttp.notify.RequestCallbackMsg;
-import com.soybeany.bdlib.web.okhttp.notify.RequestNotifier;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,15 +20,14 @@ import okio.Source;
  */
 public class CountingResponseBody extends ResponseBody {
     private final ResponseBody mDelegate;
-    private final ProgressRecorder mRecorder;
+    protected final ProgressRecorder mRecorder;
 
-    public CountingResponseBody(ResponseBody target, List<IProgressListener> listeners, RequestNotifier notifier) {
+    public CountingResponseBody(ResponseBody target, List<IProgressListener> listeners) {
         mDelegate = target;
         mRecorder = new ProgressRecorder();
         for (IProgressListener listener : listeners) {
             mRecorder.add(listener);
         }
-        Optional.ofNullable(notifier).ifPresent(n -> mRecorder.add(new NotifyListener(n, RequestCallbackMsg.TYPE_ON_DOWNLOAD)));
     }
 
     @Override

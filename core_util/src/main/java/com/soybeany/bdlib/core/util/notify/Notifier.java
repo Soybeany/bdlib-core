@@ -12,7 +12,7 @@ import java.util.Set;
  * 通知者，提供通知执行(invoker)与监听回调(callback)功能
  * <br>Created by Soybeany on 2019/5/11.
  */
-public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends INotifyMsg.Callback> {
+public class Notifier<InvokerMsg extends INotifyMsg.IInvoker, CallbackMsg extends INotifyMsg.ICallback> {
     private final Invoker<InvokerMsg> mInvokerFunc;
     private final Callback<CallbackMsg> mCallbackFunc;
 
@@ -56,13 +56,13 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
 
     // //////////////////////////////////内部类区//////////////////////////////////
 
-    public static class Invoker<Msg extends INotifyMsg.Invoker> extends DealerFunc<Msg> {
+    public static class Invoker<Msg extends INotifyMsg.IInvoker> extends DealerFunc<Msg> {
         public Invoker(IExecutable executable, String key) {
             super(executable, "invoker:" + key);
         }
     }
 
-    public static class Callback<Msg extends INotifyMsg.Callback> extends DealerFunc<Msg> {
+    public static class Callback<Msg extends INotifyMsg.ICallback> extends DealerFunc<Msg> {
         public Callback(IExecutable executable, String key) {
             super(executable, "callback:" + key);
         }
@@ -131,17 +131,17 @@ public class Notifier<InvokerMsg extends INotifyMsg.Invoker, CallbackMsg extends
             }
         }
 
+        public void notifyNow(Msg msg) {
+            MessageCenter.notifyNow(mKey, msg);
+        }
+
         /**
          * 延迟移除(延迟到{@link #onCall(Object)}后才进行删除)
          */
-        public synchronized void delayRemoveDealer(IOnCallListener listener) {
+        private synchronized void delayRemoveDealer(IOnCallListener listener) {
             if (mIsNotifying) {
                 Optional.ofNullable(listener).filter(d -> DEALERS.containVal(mKey, d)).ifPresent(mToBeRemove::add);
             }
-        }
-
-        public void notifyNow(Msg msg) {
-            MessageCenter.notifyNow(mKey, msg);
         }
 
         /**

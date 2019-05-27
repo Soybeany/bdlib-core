@@ -26,6 +26,9 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
         mProvider = provider;
     }
 
+    /**
+     * 在指定key的set中添加指定的Value
+     */
     public boolean putVal(Key key, Value value) {
         Set<Value> set = get(key);
         if (null == set) {
@@ -35,6 +38,9 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
         return set.add(value);
     }
 
+    /**
+     * 在指定key的set中移除指定的Value
+     */
     public boolean removeVal(Key key, Value value) {
         Set<Value> set = get(key);
         if (null == set) {
@@ -48,11 +54,34 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
         return removed;
     }
 
+    /**
+     * 遍历全部key，移除当中指定的Value
+     *
+     * @param value
+     * @return
+     */
+    public boolean removeVal(Value value) {
+        boolean removed = false;
+        for (Key key : keys()) {
+            removed |= removeVal(key, value);
+        }
+        return removed;
+    }
+
     public boolean containVal(Key key, Value value) {
         if (!containKey(key)) {
             return false;
         }
         return get(key).contains(value);
+    }
+
+    public boolean containVal(Value value) {
+        for (Key key : keys()) {
+            if (containVal(key, value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean invokeVal(Key key, Consumer<Value> consumer) {

@@ -3,7 +3,6 @@ package com.soybeany.bdlib.web.okhttp.core;
 import com.soybeany.bdlib.core.util.IterableUtils;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.counting.CountingResponseBody;
-import com.soybeany.bdlib.web.okhttp.notify.RequestNotifier;
 import com.soybeany.bdlib.web.okhttp.parser.IParser;
 
 import java.io.IOException;
@@ -24,8 +23,6 @@ public class OkHttpCallback<Result> implements Callback {
     private IParser<Result> mParser;
     private final List<IProgressListener> mDownloadListeners = new LinkedList<>(); // 下载监听器
     private final List<ICallback<Result>> mCallbacks = new LinkedList<>(); // 回调集
-
-    private RequestNotifier mNotifier;
 
     public OkHttpCallback(IParser<Result> parser) {
         mParser = parser;
@@ -55,10 +52,6 @@ public class OkHttpCallback<Result> implements Callback {
     }
 
     // //////////////////////////////////设置方法//////////////////////////////////
-
-    public void setNotifier(RequestNotifier notifier) {
-        mNotifier = notifier;
-    }
 
     /**
      * 设置下载监听器
@@ -94,9 +87,13 @@ public class OkHttpCallback<Result> implements Callback {
 
     // //////////////////////////////////内部方法//////////////////////////////////
 
+    protected CountingResponseBody getNewCountResponseBody(ResponseBody body, List<IProgressListener> listeners) {
+        return new CountingResponseBody(body, listeners);
+    }
+
     private ResponseBody getResponseBody(Response response) {
         ResponseBody body = response.body();
-        return !mDownloadListeners.isEmpty() ? new CountingResponseBody(body, mDownloadListeners, mNotifier) : body;
+        return !mDownloadListeners.isEmpty() ? getNewCountResponseBody(body, mDownloadListeners) : body;
     }
 
     private void parseResponse(int code, ResponseBody body) {
