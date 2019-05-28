@@ -2,9 +2,11 @@ package com.soybeany.bdlib.web.okhttp.counting;
 
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.core.util.file.ProgressRecorder;
+import com.soybeany.bdlib.core.util.storage.KeyValueStorage;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -17,16 +19,13 @@ import okio.Sink;
 /**
  * <br>Created by Soybeany on 2019/2/23.
  */
-public class CountingRequestBody extends RequestBody {
+public class CountingRequestBody extends RequestBody implements IProgressListenerSetter.IApplier {
+    private KeyValueStorage<BufferedSink, Sink> mSinkStorage = new KeyValueStorage<>();
     private final RequestBody mDelegate;
-    protected final ProgressRecorder mRecorder;
+    private final Set<IProgressListener> mListeners = new HashSet<>();
 
-    public CountingRequestBody(RequestBody delegate, List<IProgressListener> listeners) {
+    public CountingRequestBody(RequestBody delegate) {
         mDelegate = delegate;
-        mRecorder = new ProgressRecorder();
-        for (IProgressListener listener : listeners) {
-            mRecorder.add(listener);
-        }
     }
 
     @Override
@@ -47,15 +46,26 @@ public class CountingRequestBody extends RequestBody {
     @SuppressWarnings("NullableProblems")
     @Override
     public void writeTo(BufferedSink sink) throws IOException {
-        BufferedSink buffer = Okio.buffer(new CountingSink(sink));
+        BufferedSink buffer = Okio.buffer(mSinkStorage.get(sink, () -> new CountingSink(sink, contentLength(), mListeners)));
         mDelegate.writeTo(buffer);
         buffer.flush();
     }
 
-    private class CountingSink extends ForwardingSink {
-        CountingSink(Sink delegate) {
+    @Override
+    public CountingRequestBody listeners(IProgressListenerSetter setter) {
+        setter.onSetup(mListeners);
+        return this;
+    }
+
+    private static class CountingSink extends ForwardingSink {
+        private final ProgressRecorder mRecorder = new ProgressRecorder();
+
+        CountingSink(Sink delegate, long contentLength, Set<IProgressListener> listeners) {
             super(delegate);
-            mRecorder.start(contentLength());
+            for (IProgressListener listener : listeners) {
+                mRecorder.add(listener);
+            }
+            mRecorder.start(contentLength);
         }
 
         @SuppressWarnings("NullableProblems")

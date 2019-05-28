@@ -3,9 +3,11 @@ package com.soybeany.bdlib.web.okhttp.counting;
 
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.core.util.file.ProgressRecorder;
+import com.soybeany.bdlib.core.util.storage.KeyValueStorage;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
@@ -18,16 +20,13 @@ import okio.Source;
 /**
  * <br>Created by Soybeany on 2019/2/23.
  */
-public class CountingResponseBody extends ResponseBody {
+public class CountingResponseBody extends ResponseBody implements IProgressListenerSetter.IApplier {
+    private KeyValueStorage<BufferedSource, Source> mSourceStorage = new KeyValueStorage<>();
     private final ResponseBody mDelegate;
-    protected final ProgressRecorder mRecorder;
+    private final Set<IProgressListener> mListeners = new HashSet<>();
 
-    public CountingResponseBody(ResponseBody target, List<IProgressListener> listeners) {
+    public CountingResponseBody(ResponseBody target) {
         mDelegate = target;
-        mRecorder = new ProgressRecorder();
-        for (IProgressListener listener : listeners) {
-            mRecorder.add(listener);
-        }
     }
 
     @Override
@@ -43,13 +42,29 @@ public class CountingResponseBody extends ResponseBody {
     @Override
     @SuppressWarnings("NullableProblems")
     public BufferedSource source() {
-        return Okio.buffer(new CountingSource(mDelegate.source()));
+        return Okio.buffer(getSource());
     }
 
-    private class CountingSource extends ForwardingSource {
-        CountingSource(Source delegate) {
+    @Override
+    public CountingResponseBody listeners(IProgressListenerSetter setter) {
+        setter.onSetup(mListeners);
+        return this;
+    }
+
+    private Source getSource() {
+        BufferedSource source = mDelegate.source();
+        return mSourceStorage.get(source, () -> new CountingSource(source, contentLength(), mListeners));
+    }
+
+    private static class CountingSource extends ForwardingSource {
+        private final ProgressRecorder mRecorder = new ProgressRecorder();
+
+        CountingSource(Source delegate, long contentLength, Set<IProgressListener> listeners) {
             super(delegate);
-            mRecorder.start(contentLength());
+            for (IProgressListener listener : listeners) {
+                mRecorder.add(listener);
+            }
+            mRecorder.start(contentLength);
         }
 
         @Override

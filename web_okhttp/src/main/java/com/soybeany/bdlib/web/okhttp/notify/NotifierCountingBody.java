@@ -1,11 +1,8 @@
 package com.soybeany.bdlib.web.okhttp.notify;
 
-import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.counting.CountingRequestBody;
 import com.soybeany.bdlib.web.okhttp.counting.CountingResponseBody;
-
-import java.util.List;
 
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -16,24 +13,28 @@ import okhttp3.ResponseBody;
 public class NotifierCountingBody {
 
     public static class Request extends CountingRequestBody {
-        public Request(RequestBody delegate, List<IProgressListener> listeners, RequestNotifier notifier) {
-            super(delegate, listeners);
-            Optional.ofNullable(notifier).ifPresent(n -> mRecorder.add(new NotifierListener(n, new RequestMsg.OnUpload())));
+        public Request(RequestBody delegate, RequestNotifier notifier) {
+            super(delegate);
+            if (null != notifier) {
+                listeners(set -> set.add(new NotifierListener(notifier, new RequestNotifierMsg.OnUpload())));
+            }
         }
     }
 
     public static class Response extends CountingResponseBody {
-        public Response(ResponseBody target, List<IProgressListener> listeners, RequestNotifier notifier) {
-            super(target, listeners);
-            Optional.ofNullable(notifier).ifPresent(n -> mRecorder.add(new NotifierListener(n, new RequestMsg.OnDownload())));
+        public Response(ResponseBody target, RequestNotifier notifier) {
+            super(target);
+            if (null != notifier) {
+                listeners(set -> set.add(new NotifierListener(notifier, new RequestNotifierMsg.OnDownload())));
+            }
         }
     }
 
     private static class NotifierListener implements IProgressListener {
         private final RequestNotifier mNotifier;
-        private final RequestMsg.Callback<Float> mMsg;
+        private final RequestNotifierMsg.Callback<Float> mMsg;
 
-        NotifierListener(RequestNotifier notifier, RequestMsg.Callback<Float> msg) {
+        NotifierListener(RequestNotifier notifier, RequestNotifierMsg.Callback<Float> msg) {
             mNotifier = notifier;
             mMsg = msg;
         }

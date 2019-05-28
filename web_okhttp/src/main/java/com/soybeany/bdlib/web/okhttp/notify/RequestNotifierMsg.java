@@ -6,7 +6,7 @@ import com.soybeany.bdlib.core.util.notify.INotifyMsg;
  * <br>Created by Soybeany on 2019/5/8.
  */
 @SuppressWarnings("WeakerAccess")
-public class RequestMsg {
+public class RequestNotifierMsg {
 
     // //////////////////////////////////静态方法区//////////////////////////////////
 

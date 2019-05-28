@@ -8,6 +8,6 @@ import com.soybeany.bdlib.core.util.notify.NotifierConnector;
  */
 public class RequestConnector<N extends Notifier> extends NotifierConnector<RequestNotifier, N> {
     public void connectN1(RequestNotifier notifier) {
-        super.connectN1(notifier, RequestMsg.OnFinish.class);
+        super.connectN1(notifier, RequestNotifierMsg.OnFinish.class);
     }
 }

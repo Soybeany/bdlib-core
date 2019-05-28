@@ -6,9 +6,9 @@ import com.soybeany.bdlib.web.okhttp.counting.CountingRequestBody;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import okhttp3.FormBody;
 import okhttp3.Request;
@@ -91,8 +91,8 @@ public class OkHttpRequestFactory {
      * post请求基类，允许统计上传进度
      */
     public abstract static class PostBuilder extends BasicBuilder {
-        private final List<IProgressListener> mUploadListeners = new LinkedList<>(); // 上传监听器
-        private ICountingRequestBodyProvider mProvider = CountingRequestBody::new;
+        private final Set<IProgressListener> mUploadListeners = new HashSet<>(); // 上传监听器
+        private ICountingRequestBodyProvider mProvider = (body, listeners) -> new CountingRequestBody(body).listeners(set -> set.addAll(listeners));
 
         public PostBuilder(String url) {
             super(url);
@@ -191,6 +191,6 @@ public class OkHttpRequestFactory {
     }
 
     public interface ICountingRequestBodyProvider {
-        CountingRequestBody getNewCountingRequestBody(RequestBody body, List<IProgressListener> listeners);
+        CountingRequestBody getNewCountingRequestBody(RequestBody body, Set<IProgressListener> listeners);
     }
 }

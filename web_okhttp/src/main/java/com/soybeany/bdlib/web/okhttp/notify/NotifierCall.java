@@ -47,7 +47,7 @@ public class NotifierCall extends CallWrapper {
 
     private class CallbackWrapper implements Callback {
         private Callback mTarget;
-        private IOnCallListener mListener = msg -> RequestMsg.invokeWhenCancel(msg, NotifierCall.this::cancel);
+        private IOnCallListener mListener = msg -> RequestNotifierMsg.invokeWhenCancel(msg, NotifierCall.this::cancel);
 
         CallbackWrapper(Callback target) {
             mTarget = target;
@@ -68,11 +68,11 @@ public class NotifierCall extends CallWrapper {
 
         private void register(RequestNotifier notifier) {
             notifier.invoker().addListener(mListener);
-            notifier.callback().notifyNow(new RequestMsg.OnStart());
+            notifier.callback().notifyNow(new RequestNotifierMsg.OnStart());
         }
 
         private void unregister(RequestNotifier notifier, RequestFinishReason reason) {
-            notifier.callback().notifyNow(new RequestMsg.OnFinish(reason));
+            notifier.callback().notifyNow(new RequestNotifierMsg.OnFinish(reason));
             notifier.invoker().removeListener(mListener);
         }
     }

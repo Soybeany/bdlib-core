@@ -6,8 +6,8 @@ import com.soybeany.bdlib.web.okhttp.counting.CountingResponseBody;
 import com.soybeany.bdlib.web.okhttp.parser.IParser;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -21,8 +21,8 @@ import static com.soybeany.bdlib.web.okhttp.core.ICallback.CODE_NOT_DEFINE;
  */
 public class OkHttpCallback<Result> implements Callback {
     private IParser<Result> mParser;
-    private final List<IProgressListener> mDownloadListeners = new LinkedList<>(); // 下载监听器
-    private final List<ICallback<Result>> mCallbacks = new LinkedList<>(); // 回调集
+    private final Set<IProgressListener> mDownloadListeners = new HashSet<>(); // 下载监听器
+    private final Set<ICallback<Result>> mCallbacks = new HashSet<>(); // 回调集
 
     public OkHttpCallback(IParser<Result> parser) {
         mParser = parser;
@@ -87,8 +87,8 @@ public class OkHttpCallback<Result> implements Callback {
 
     // //////////////////////////////////内部方法//////////////////////////////////
 
-    protected CountingResponseBody getNewCountResponseBody(ResponseBody body, List<IProgressListener> listeners) {
-        return new CountingResponseBody(body, listeners);
+    protected CountingResponseBody getNewCountResponseBody(ResponseBody body, Set<IProgressListener> listeners) {
+        return new CountingResponseBody(body).listeners(set -> set.addAll(listeners));
     }
 
     private ResponseBody getResponseBody(Response response) {
