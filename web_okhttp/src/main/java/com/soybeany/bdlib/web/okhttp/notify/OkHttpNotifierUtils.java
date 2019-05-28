@@ -24,18 +24,18 @@ public class OkHttpNotifierUtils {
         private IConnectorSetter<N> mCSetter;
 
         @Override
-        public ClientPart addSetter(OkHttpClientFactory.IClientSetter setter) {
+        public ClientPart<N> addSetter(OkHttpClientFactory.IClientSetter setter) {
             super.addSetter(setter);
             return this;
         }
 
         @Override
-        public ClientPart removeSetter(OkHttpClientFactory.IClientSetter setter) {
+        public ClientPart<N> removeSetter(OkHttpClientFactory.IClientSetter setter) {
             super.removeSetter(setter);
             return this;
         }
 
-        public ClientPart connector(IConnectorSetter<N> cSetter) {
+        public ClientPart<N> connector(IConnectorSetter<N> cSetter) {
             mCSetter = cSetter;
             return this;
         }
