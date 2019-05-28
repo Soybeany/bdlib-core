@@ -2,7 +2,6 @@ package com.soybeany.bdlib.web.okhttp.counting;
 
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.core.util.file.ProgressRecorder;
-import com.soybeany.bdlib.core.util.storage.KeyValueStorage;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -20,7 +19,6 @@ import okio.Sink;
  * <br>Created by Soybeany on 2019/2/23.
  */
 public class CountingRequestBody extends RequestBody implements IProgressListenerSetter.IApplier {
-    private KeyValueStorage<BufferedSink, Sink> mSinkStorage = new KeyValueStorage<>();
     private final RequestBody mDelegate;
     private final Set<IProgressListener> mListeners = new HashSet<>();
 
@@ -46,9 +44,9 @@ public class CountingRequestBody extends RequestBody implements IProgressListene
     @SuppressWarnings("NullableProblems")
     @Override
     public void writeTo(BufferedSink sink) throws IOException {
-        BufferedSink buffer = Okio.buffer(mSinkStorage.get(sink, () -> new CountingSink(sink, contentLength(), mListeners)));
+        BufferedSink buffer = Okio.buffer(new CountingSink(sink, contentLength(), mListeners));
         mDelegate.writeTo(buffer);
-        buffer.flush();
+        buffer.close();
     }
 
     @Override
