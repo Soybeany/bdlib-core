@@ -38,13 +38,7 @@ public class OkHttpNotifierTest {
 
     @Test
     public void test1() {
-        OkHttpNotifierUtils.newClient().newNotifierRequest().newCall(notifier -> {
-            notifier.callback().addListener(msg -> {
-                System.out.println("收到通知:" + msg);
-            });
-            return OkHttpRequestFactory.postForm(mUrl).param("what", "new Day")
-                    .addUploadListener((percent, cur, total) -> System.out.println("上传进度:" + percent)).build();
-        }, new OkHttpNotifierUtils.IConnectorSetter<Notifier>() {
+        OkHttpNotifierUtils.newClient(Notifier.class).connector(new OkHttpNotifierUtils.IConnectorSetter<Notifier>() {
             @Override
             public Notifier getNewNotifier() {
                 return new Notifier();
@@ -60,7 +54,12 @@ public class OkHttpNotifierTest {
                 applier.addLogic(OnStart.class, (msg, n1, n2) -> System.out.println("逻辑:" + msg + " n1:" + n1 + " n2:" + n2));
                 applier.addLogic(OnFinish.class, (msg, n1, n2) -> System.out.println("逻辑2:" + msg + " n1:" + n1 + " n2:" + n2));
             }
-
+        }).newNotifierRequest().newCall(notifier -> {
+            notifier.callback().addListener(msg -> {
+                System.out.println("收到通知:" + msg);
+            });
+            return OkHttpRequestFactory.postForm(mUrl).param("what", "new Day")
+                    .addUploadListener((percent, cur, total) -> System.out.println("上传进度:" + percent)).build();
         }).enqueue(new NotifierCallback<>(StringParser.get()).addCallback(new ICallback<String>() {
             @Override
             public void onSuccess(String s) {
@@ -111,6 +110,31 @@ public class OkHttpNotifierTest {
             });
         }
         LockSupport.park();
+    }
+
+    private void test3() {
+//        OkHttpNotifierUtils.newClient(DiyNotifier.class).connector(new DefaultConnector()).newNotifierRequest()
+    }
+
+    public static class DefaultConnector implements OkHttpNotifierUtils.IConnectorSetter<DiyNotifier> {
+        @Override
+        public DiyNotifier getNewNotifier() {
+            return null;
+        }
+
+        @Override
+        public Class<? extends INotifyMsg> getDMClass() {
+            return null;
+        }
+
+        @Override
+        public void onSetupLogic(IConnectLogic.IApplier<RequestNotifier, DiyNotifier> applier) {
+
+        }
+    }
+
+    public static class DiyNotifier extends Notifier {
+
     }
 
     private static class EndMsg implements INotifyMsg {
