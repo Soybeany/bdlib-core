@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentMap;
  * Key-Value存储器
  * <br>Created by Soybeany on 2019/4/11.
  */
+@SuppressWarnings({"UnusedReturnValue", "unused", "WeakerAccess"})
 public class KeyValueStorage<Key, Value> {
     private final ConcurrentMap<Key, Value> mMap = new ConcurrentHashMap<>();
 

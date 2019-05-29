@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentMap;
  * Key-Set存储器
  * <br>Created by Soybeany on 2019/4/13.
  */
+@SuppressWarnings({"UnusedReturnValue", "unused", "WeakerAccess"})
 public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> {
     private final Set<IKeyRemoveListener<Key>> mRemoveListeners = new ConcurrentHashSet<>();
     private final ISetProvider<Value> mProvider;
@@ -56,9 +57,6 @@ public class KeySetStorage<Key, Value> extends KeyValueStorage<Key, Set<Value>> 
 
     /**
      * 遍历全部key，移除当中指定的Value
-     *
-     * @param value
-     * @return
      */
     public boolean removeVal(Value value) {
         boolean removed = false;

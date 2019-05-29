@@ -4,7 +4,7 @@ import com.soybeany.bdlib.core.util.notify.IConnectLogic;
 import com.soybeany.bdlib.core.util.notify.INotifyMsg;
 import com.soybeany.bdlib.core.util.notify.Notifier;
 import com.soybeany.bdlib.web.okhttp.core.ICallback;
-import com.soybeany.bdlib.web.okhttp.core.OkHttpRequestFactory;
+import com.soybeany.bdlib.web.okhttp.core.ParamAppender;
 import com.soybeany.bdlib.web.okhttp.counting.CountingRequestBody;
 import com.soybeany.bdlib.web.okhttp.counting.CountingResponseBody;
 import com.soybeany.bdlib.web.okhttp.notify.NotifierCallback;
@@ -54,12 +54,12 @@ public class OkHttpNotifierTest {
                 applier.addLogic(OnStart.class, (msg, n1, n2) -> System.out.println("逻辑:" + msg + " n1:" + n1 + " n2:" + n2));
                 applier.addLogic(OnFinish.class, (msg, n1, n2) -> System.out.println("逻辑2:" + msg + " n1:" + n1 + " n2:" + n2));
             }
-        }).newNotifierRequest().newCall(notifier -> {
+        }).newNotifierRequest().newCall((builder, notifier) -> {
             notifier.callback().addListener(msg -> {
                 System.out.println("收到通知:" + msg);
             });
-            return OkHttpRequestFactory.postForm(mUrl).param("what", "new Day")
-                    .addUploadListener((percent, cur, total) -> System.out.println("上传进度:" + percent)).build();
+            return builder.addUploadListener((percent, cur, total) -> System.out.println("上传进度:" + percent)).url(mUrl)
+                    .post(new ParamAppender().add("what", "new Day").toNewFormBody().build()).build();
         }).enqueue(new NotifierCallback<>(StringParser.get()).addCallback(new ICallback<String>() {
             @Override
             public void onSuccess(String s) {

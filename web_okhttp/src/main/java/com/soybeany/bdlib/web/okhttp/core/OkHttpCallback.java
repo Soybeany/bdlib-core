@@ -87,13 +87,13 @@ public class OkHttpCallback<Result> implements Callback {
 
     // //////////////////////////////////内部方法//////////////////////////////////
 
-    protected CountingResponseBody getNewCountResponseBody(ResponseBody body, Set<IProgressListener> listeners) {
-        return new CountingResponseBody(body).listeners(set -> set.addAll(listeners));
+    protected CountingResponseBody getNewCountResponseBody(ResponseBody body) {
+        return new CountingResponseBody(body);
     }
 
     private ResponseBody getResponseBody(Response response) {
         ResponseBody body = response.body();
-        return !mDownloadListeners.isEmpty() ? getNewCountResponseBody(body, mDownloadListeners) : body;
+        return !mDownloadListeners.isEmpty() ? getNewCountResponseBody(body).listeners(set -> set.addAll(mDownloadListeners)) : body;
     }
 
     private void parseResponse(int code, ResponseBody body) {

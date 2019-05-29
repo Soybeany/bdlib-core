@@ -15,9 +15,8 @@ public class URLParser {
         if (null == paramMap || 0 == paramMap.size()) {
             return url;
         }
-
         StringBuilder paramsStr = new StringBuilder(url);
-        paramsStr.append("?");
+        paramsStr.append(!url.contains("?") ? "?" : "&"); // 区分"已有参数"与"未有参数"的情况
         for (Map.Entry<String, String> entry : paramMap.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
@@ -48,5 +47,4 @@ public class URLParser {
         }
         return strArr[0];
     }
-
 }

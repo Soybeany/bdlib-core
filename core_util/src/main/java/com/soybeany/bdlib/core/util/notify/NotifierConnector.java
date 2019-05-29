@@ -1,7 +1,6 @@
 package com.soybeany.bdlib.core.util.notify;
 
 import com.soybeany.bdlib.core.java8.Optional;
-import com.soybeany.bdlib.core.util.storage.KeySetStorage;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,28 +11,26 @@ import java.util.Map;
  * <br>Created by Soybeany on 2019/5/25.
  */
 public class NotifierConnector<N1 extends Notifier, N2 extends Notifier> implements IOnCallListener, IConnectLogic.IApplier<N1, N2> {
-    private final KeySetStorage<Class<? extends INotifyMsg>, IConnectLogic<INotifyMsg, N1, N2>> mLogicStorage = new KeySetStorage<>();
+    private final IConnectLogic.ApplierImpl<N1, N2> mApplierDelegate = new IConnectLogic.ApplierImpl<>();
     private final Map<Class<? extends INotifyMsg>, Notifier> mDmMap = new HashMap<>();
     private N1 mN1;
     private N2 mN2;
 
     @Override
     public void onCall(INotifyMsg msg) {
-        mLogicStorage.invokeVal(msg.getClass(), logic -> logic.onCall(msg, mN1, mN2));
+        mApplierDelegate.invoke(msg, mN1, mN2);
         // 自动移除对Notifier的监听
         Optional.ofNullable(mDmMap.remove(msg.getClass())).ifPresent(notifier -> notifier.callback().removeListener(this));
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <Msg extends INotifyMsg> void addLogic(Class<Msg> clazz, IConnectLogic<Msg, N1, N2> logic) {
-        mLogicStorage.putVal(clazz, (IConnectLogic<INotifyMsg, N1, N2>) logic);
+        mApplierDelegate.addLogic(clazz, logic);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void removeLogic(IConnectLogic<? extends INotifyMsg, N1, N2> logic) {
-        mLogicStorage.removeVal((IConnectLogic<INotifyMsg, N1, N2>) logic);
+        mApplierDelegate.removeLogic(logic);
     }
 
     public void connectN1(N1 notifier, Class<? extends INotifyMsg> disconnectMsg) {

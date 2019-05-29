@@ -1,11 +1,8 @@
 package com.soybeany.bdlib.web.okhttp.notify;
 
-import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.core.OkHttpCallback;
 import com.soybeany.bdlib.web.okhttp.counting.CountingResponseBody;
 import com.soybeany.bdlib.web.okhttp.parser.IParser;
-
-import java.util.Set;
 
 import okhttp3.ResponseBody;
 
@@ -20,8 +17,8 @@ public class NotifierCallback<Result> extends OkHttpCallback<Result> {
     }
 
     @Override
-    protected CountingResponseBody getNewCountResponseBody(ResponseBody body, Set<IProgressListener> listeners) {
-        return new NotifierCountingBody.Response(body, mNotifier).listeners(set -> set.addAll(listeners));
+    protected CountingResponseBody getNewCountResponseBody(ResponseBody body) {
+        return new NotifierCountingBody.Response(body, mNotifier);
     }
 
     public void setNotifier(RequestNotifier notifier) {

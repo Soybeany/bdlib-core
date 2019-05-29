@@ -3,8 +3,7 @@ package com.soybeany.bdlib.web.okhttp.notify;
 import com.soybeany.bdlib.core.util.notify.IConnectLogic;
 import com.soybeany.bdlib.core.util.notify.INotifyMsg;
 import com.soybeany.bdlib.core.util.notify.Notifier;
-import com.soybeany.bdlib.web.okhttp.OkHttpUtils;
-import com.soybeany.bdlib.web.okhttp.core.OkHttpClientFactory;
+import com.soybeany.bdlib.web.okhttp.core.OkHttpUtils;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -24,13 +23,13 @@ public class OkHttpNotifierUtils {
         private IConnectorSetter<N> mCSetter;
 
         @Override
-        public ClientPart<N> addSetter(OkHttpClientFactory.IClientSetter setter) {
+        public ClientPart<N> addSetter(OkHttpUtils.IClientSetter setter) {
             super.addSetter(setter);
             return this;
         }
 
         @Override
-        public ClientPart<N> removeSetter(OkHttpClientFactory.IClientSetter setter) {
+        public ClientPart<N> removeSetter(OkHttpUtils.IClientSetter setter) {
             super.removeSetter(setter);
             return this;
         }
@@ -53,8 +52,8 @@ public class OkHttpNotifierUtils {
             mCSetter = cSetter;
         }
 
-        public Call newCall(IRequestGetter rGetter) {
-            RequestNotifier notifier = rGetter.getNewNotifier();
+        public Call newCall(INotifierRequestSetter setter) {
+            RequestNotifier notifier = setter.getNewNotifier();
             // 若配置了连接器设置，则进行设置
             if (null != mCSetter) {
                 RequestConnector<N> connector = new RequestConnector<>();
@@ -62,12 +61,12 @@ public class OkHttpNotifierUtils {
                 connector.connectN2(mCSetter.getNewNotifier(), mCSetter.getDMClass());
                 mCSetter.onSetupLogic(connector);
             }
-            return new NotifierCall(newCall(rGetter.getRequest(notifier)), notifier);
+            return new NotifierCall(newCall(builder -> setter.onGetNewRequest(new NotifierRequestBuilder(notifier), notifier)), notifier);
         }
     }
 
-    public interface IRequestGetter {
-        Request getRequest(RequestNotifier notifier);
+    public interface INotifierRequestSetter {
+        Request onGetNewRequest(NotifierRequestBuilder builder, RequestNotifier notifier);
 
         default RequestNotifier getNewNotifier() {
             return new RequestNotifier();
