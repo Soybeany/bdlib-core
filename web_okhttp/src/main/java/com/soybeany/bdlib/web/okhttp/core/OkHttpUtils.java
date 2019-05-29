@@ -100,11 +100,11 @@ public class OkHttpUtils {
     }
 
     public interface IClientSetter {
-        void onSetup(OkHttpClient.Builder builder);
-
-        default void setupTimeout(OkHttpClient.Builder builder, long sec) {
+        static void setupTimeout(OkHttpClient.Builder builder, long sec) {
             builder.connectTimeout(sec, TimeUnit.SECONDS).readTimeout(sec, TimeUnit.SECONDS).writeTimeout(sec, TimeUnit.SECONDS);
         }
+
+        void onSetup(OkHttpClient.Builder builder);
     }
 
     public interface IRequestSetter {
