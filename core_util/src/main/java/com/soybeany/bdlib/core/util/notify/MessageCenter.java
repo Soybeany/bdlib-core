@@ -1,86 +1,50 @@
 package com.soybeany.bdlib.core.util.notify;
 
-import com.soybeany.bdlib.core.java8.Optional;
 import com.soybeany.bdlib.core.util.storage.IExecutable;
-import com.soybeany.bdlib.core.util.storage.KeySetStorage;
-
-import java.util.Set;
 
 /**
  * 信息中心，适用于应用的数据通讯
  * 支持在任意线程中提交信息，并在任意线程中响应
  * <br>Created by Soybeany on 2018/2/22.
  */
-// TODO: 2019/2/21 添加调用完成监听
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class MessageCenter {
-    private static KeySetStorage<String, Info> CALLBACK_STORAGE = new KeySetStorage<>(); // 回调存储
-    private static KeySetStorage<ICallback, Info> HANDLER_STORAGE = new KeySetStorage<>(); // 处理器存储
-    private static KeySetStorage<IExecutable, Info> HOLDER_STORAGE = new KeySetStorage<>(); // 持有器存储
+    private static StorageCenter<String, Object> INSTANCE = new StorageCenter<>();
 
     public static void register(IExecutable holder, String key, ICallback callback) {
-        // 创建信息
-        Info info = new Info(key, holder, callback);
-        // 回调映射中创建记录
-        CALLBACK_STORAGE.putVal(key, info);
-        // 处理器映射中创建记录
-        HANDLER_STORAGE.putVal(callback, info);
-        // 持有器中创建记录
-        HOLDER_STORAGE.putVal(holder, info);
+        INSTANCE.register(holder, key, callback);
     }
 
     public static void unregister(IExecutable holder) {
-        Optional.ofNullable(HOLDER_STORAGE.get(holder)).ifPresent(MessageCenter::removeRecords);
+        INSTANCE.unregister(holder);
     }
 
     public static void unregister(String key) {
-        Optional.ofNullable(CALLBACK_STORAGE.get(key)).ifPresent(MessageCenter::removeRecords);
+        INSTANCE.unregister(key);
     }
 
     public static void unregister(ICallback callback) {
-        Optional.ofNullable(HANDLER_STORAGE.get(callback)).ifPresent(MessageCenter::removeRecords);
+        INSTANCE.unregister(callback);
     }
 
     public static void notifyNow(String key, Object data) {
-        notifyDelay(key, data, 0);
+        INSTANCE.notifyNow(key, data);
     }
 
     public static void notifyDelay(String key, Object data, long delayMills) {
-        CALLBACK_STORAGE.invokeVal(key, info -> info.holder.post(() -> info.callback.onCall(data), delayMills));
+        INSTANCE.notifyDelay(key, data, delayMills);
     }
 
     /**
      * 停止指定名称的线程
      */
     public static void stopThread(IExecutable holder) {
-        holder.stop();
-        // 移除相应的监听器
-        unregister(holder);
-    }
-
-    private static void removeRecords(Set<Info> infoSet) {
-        for (Info info : infoSet) {
-            CALLBACK_STORAGE.removeVal(info.key, info);
-            HANDLER_STORAGE.removeVal(info.callback, info);
-            HOLDER_STORAGE.removeVal(info.holder, info);
-        }
+        INSTANCE.stopThread(holder);
     }
 
     /**
      * 强引用回调
      */
-    public interface ICallback {
-        void onCall(Object data);
-    }
-
-    private static class Info {
-        String key;
-        IExecutable holder;
-        ICallback callback;
-
-        Info(String key, IExecutable holder, ICallback callback) {
-            this.key = key;
-            this.holder = holder;
-            this.callback = callback;
-        }
+    public interface ICallback extends StorageCenter.ICallback<Object> {
     }
 }
