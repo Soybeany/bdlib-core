@@ -1,4 +1,4 @@
-ly plugin: 'java-library'
+apply plugin: 'java-library'
 apply plugin: 'maven'
 
 dependencies {
