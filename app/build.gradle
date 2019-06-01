@@ -32,4 +32,5 @@ dependencies {
     implementation project(':core_util')
     implementation project(':core_java8')
     implementation project(':web_okhttp')
+    implementation project(':log_extract')
 }

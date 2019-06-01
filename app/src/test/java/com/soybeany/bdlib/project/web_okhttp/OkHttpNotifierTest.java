@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.project;
+package com.soybeany.bdlib.project.web_okhttp;
 
 import com.soybeany.bdlib.core.util.notify.IConnectLogic;
 import com.soybeany.bdlib.core.util.notify.INotifyMsg;

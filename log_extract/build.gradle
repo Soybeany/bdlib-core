@@ -1,0 +1,20 @@
+ly plugin: 'java-library'
+apply plugin: 'maven'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':core_java8')
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+artifacts {
+    archives sourcesJar
+}
