@@ -8,32 +8,20 @@ import com.soybeany.bdlib.log.extract.model.IDataProvider;
  * <br>Created by Soybeany on 2019/5/31.
  */
 public class StringFilter<Item> extends IFilter.Impl<Item, String> {
-    private String mData;
+    private IKeyContainer<String> mContainer;
 
-    public StringFilter(String data, IDataProvider<Item, String> provider) {
+    public StringFilter(IKeyContainer<String> container, IDataProvider<Item, String> provider) {
         super(provider);
-        mData = null != data ? data.trim().toLowerCase() : null;
+        mContainer = container;
     }
 
     @Override
     public boolean isActive() {
-        return null != mData && !mData.isEmpty();
+        return null != mContainer && mContainer.hasKey();
     }
 
     @Override
-    protected boolean shouldInterceptWithData(String data) {
-        return !containKey(data);
-    }
-
-    public boolean containKey(String data) {
-        return data.toLowerCase().contains(mData);
-    }
-
-    // //////////////////////////////////内部类//////////////////////////////////
-
-    public static class StringItemFilter extends StringFilter<String> {
-        public StringItemFilter(String data) {
-            super(data, key -> key);
-        }
+    protected boolean shouldInterceptWithData(String target) {
+        return mContainer.isTargetContainKey(target);
     }
 }
