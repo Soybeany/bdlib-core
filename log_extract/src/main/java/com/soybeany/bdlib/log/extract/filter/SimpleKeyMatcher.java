@@ -1,13 +1,13 @@
 package com.soybeany.bdlib.log.extract.filter;
 
 /**
- * 简单的键容器
+ * 简单的匹配器
  * <br>Created by Soybeany on 2019/6/1.
  */
-public class SimpleKeyContainer implements IKeyContainer<String> {
+public class SimpleKeyMatcher implements IKeyMatcher {
     private String mKey;
 
-    public SimpleKeyContainer(String key) {
+    public SimpleKeyMatcher(String key) {
         mKey = (null != key ? key.trim().toLowerCase() : null);
     }
 

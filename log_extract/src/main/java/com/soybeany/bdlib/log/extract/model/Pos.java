@@ -15,5 +15,5 @@ public class Pos {
     /**
      * 行号
      */
-    public int rowNum;
+    public int rowNum = START_ROW_NUM;
 }

@@ -1,11 +1,12 @@
 package com.soybeany.bdlib.log.extract.filter;
 
-import com.soybeany.bdlib.log.extract.model.IDataProvider;
+import com.soybeany.bdlib.log.extract.model.IItem;
+import com.soybeany.bdlib.log.extract.parser.IParser;
 
 /**
  * <br>Created by Soybeany on 2019/5/31.
  */
-public interface IFilter<Item> {
+public interface IFilter<Item extends IItem> {
     /**
      * 是否激活状态，即此过滤器是否要工作
      */
@@ -19,17 +20,17 @@ public interface IFilter<Item> {
     boolean shouldIntercept(Item item);
 
     @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
-    abstract class Impl<Item, Data> implements IFilter<Item> {
-        private final IDataProvider<Item, Data> mProvider;
+    abstract class Impl<Item extends IItem, Data> implements IFilter<Item> {
+        private final IParser<Item, Data> mProvider;
         private boolean mInterceptWhenItemIsNull;
 
-        public Impl(IDataProvider<Item, Data> provider) {
+        public Impl(IParser<Item, Data> provider) {
             mProvider = provider;
         }
 
         @Override
         public boolean shouldIntercept(Item item) {
-            return null == item ? mInterceptWhenItemIsNull : shouldInterceptWithData(mProvider.getData(item));
+            return null == item ? mInterceptWhenItemIsNull : shouldInterceptWithData(mProvider.toOutput(item));
         }
 
         /**
