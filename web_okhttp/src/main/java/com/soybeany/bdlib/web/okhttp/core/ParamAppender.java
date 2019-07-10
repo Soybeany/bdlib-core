@@ -26,11 +26,19 @@ public class ParamAppender {
     }
 
     /**
+     * 使用映射中的值
+     */
+    public ParamAppender add(Map<String, String> map) {
+        mMap.putAll(map);
+        return this;
+    }
+
+    /**
      * 使用对象的public字段及值
      */
-    public ParamAppender add(Object obj) {
-        IterableUtils.forEach(Arrays.asList(obj.getClass().getFields()),
-                (field, flag) -> mMap.put(field.getName(), field.get(obj).toString()));
+    public ParamAppender add(IParamProvider provider) {
+        IterableUtils.forEach(Arrays.asList(provider.getClass().getFields()),
+                (field, flag) -> mMap.put(field.getName(), field.get(provider).toString()));
         return this;
     }
 
@@ -55,4 +63,19 @@ public class ParamAppender {
             builder.add(entry.getKey(), entry.getValue());
         }
     }
+
+    // //////////////////////////////////继承区//////////////////////////////////
+
+    protected Map<String, String> getParams() {
+        return mMap;
+    }
+
+    // //////////////////////////////////接口区//////////////////////////////////
+
+    /**
+     * 标识符接口
+     */
+    public interface IParamProvider {
+    }
+
 }
