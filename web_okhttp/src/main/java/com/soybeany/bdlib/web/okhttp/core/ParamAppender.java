@@ -21,7 +21,9 @@ public class ParamAppender {
      * 使用键值对
      */
     public ParamAppender add(String key, String value) {
-        mMap.put(key, value);
+        if (null != key && null != value) {
+            mMap.put(key, value);
+        }
         return this;
     }
 
@@ -29,7 +31,9 @@ public class ParamAppender {
      * 使用映射中的值
      */
     public ParamAppender add(Map<String, String> map) {
-        mMap.putAll(map);
+        if (null != map) {
+            IterableUtils.forEach(map.entrySet(), (entry, flag) -> add(entry.getKey(), entry.getValue()));
+        }
         return this;
     }
 
