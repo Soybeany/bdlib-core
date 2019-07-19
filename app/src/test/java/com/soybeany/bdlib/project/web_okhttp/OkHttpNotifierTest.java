@@ -62,17 +62,17 @@ public class OkHttpNotifierTest {
                     .post(new ParamAppender().add("what", "new Day").toNewFormBody().build()).build();
         }).enqueue(new NotifierCallback<>(StringParser.get()).addCallback(new ICallback<String>() {
             @Override
-            public void onSuccess(String s) {
+            public void onSuccess(int id, String s) {
                 System.out.println("成功:" + s);
             }
 
             @Override
-            public void onFailure(boolean isCanceled, String msg) {
+            public void onFailure(int id, boolean isCanceled, String msg) {
                 System.out.println("失败:" + msg);
             }
 
             @Override
-            public void onFinal(boolean isCanceled) {
+            public void onFinal(int id, boolean isCanceled) {
                 LockSupport.unpark(mMainThread);
             }
         }));

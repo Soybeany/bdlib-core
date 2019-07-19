@@ -13,7 +13,7 @@ public interface ICallback<Result> {
     /**
      * 将异常解析为信息
      */
-    default String onParseExceptionMsg(boolean isCanceled, boolean hasResponse, boolean isHttpSuccess, int code, Exception e) {
+    default String onParseExceptionMsg(int id, boolean isCanceled, boolean hasResponse, boolean isHttpSuccess, int code, Exception e) {
         String errMsg = null != e ? e.getMessage() : "缺失异常信息";
         if (e instanceof HandledException) {
             return errMsg;
@@ -33,26 +33,26 @@ public interface ICallback<Result> {
     /**
      * 成功时的回调
      */
-    void onSuccess(Result result);
+    void onSuccess(int id, Result result);
 
     /**
      * 失败时的回调
      */
-    void onFailure(boolean isCanceled, String msg);
+    void onFailure(int id, boolean isCanceled, String msg);
 
     /**
      * 最终的回调
      */
-    default void onFinal(boolean isCanceled) {
+    default void onFinal(int id, boolean isCanceled) {
     }
 
     interface Empty<Result> extends ICallback<Result> {
         @Override
-        default void onSuccess(Result result) {
+        default void onSuccess(int id, Result result) {
         }
 
         @Override
-        default void onFailure(boolean isCanceled, String msg) {
+        default void onFailure(int id, boolean isCanceled, String msg) {
         }
     }
 }

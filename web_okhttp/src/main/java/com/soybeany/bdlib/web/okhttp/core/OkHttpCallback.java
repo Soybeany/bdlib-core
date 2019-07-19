@@ -24,6 +24,13 @@ public class OkHttpCallback<Result> implements Callback {
     private final Set<IProgressListener> mDownloadListeners = new HashSet<>(); // 下载监听器
     private final Set<ICallback<Result>> mCallbacks = new HashSet<>(); // 回调集
 
+    /**
+     * 获得用于区分请求的id
+     */
+    public static int getCallId(Call call) {
+        return System.identityHashCode(call);
+    }
+
     public OkHttpCallback(IParser<Result> parser) {
         mParser = parser;
     }
@@ -31,24 +38,26 @@ public class OkHttpCallback<Result> implements Callback {
     @Override
     @SuppressWarnings("NullableProblems")
     public void onFailure(Call call, IOException e) {
+        int id = getCallId(call);
         boolean isCanceled = call.isCanceled();
-        invokeFailureCallback(isCanceled, false, false, CODE_NOT_DEFINE, e);
-        forEach((callback, flag) -> callback.onFinal(isCanceled));
+        invokeFailureCallback(id, isCanceled, false, false, CODE_NOT_DEFINE, e);
+        forEach((callback, flag) -> callback.onFinal(id, isCanceled));
     }
 
     @Override
     @SuppressWarnings("NullableProblems")
     public void onResponse(Call call, Response response) {
+        int id = getCallId(call);
         try (ResponseBody body = getResponseBody(response)) {
             if (response.isSuccessful()) {
-                parseResponse(response.code(), body);
+                parseResponse(id, response.code(), body);
             } else {
-                invokeFailureCallback(false, true, false, response.code(), null);
+                invokeFailureCallback(id, false, true, false, response.code(), null);
             }
         } catch (Exception e) {
-            invokeFailureCallback(false, false, false, CODE_NOT_DEFINE, e);
+            invokeFailureCallback(id, false, false, false, CODE_NOT_DEFINE, e);
         }
-        forEach((callback, flag) -> callback.onFinal(false));
+        forEach((callback, flag) -> callback.onFinal(id, false));
     }
 
     // //////////////////////////////////设置方法//////////////////////////////////
@@ -96,17 +105,17 @@ public class OkHttpCallback<Result> implements Callback {
         return !mDownloadListeners.isEmpty() ? getNewCountResponseBody(body).listeners(set -> set.addAll(mDownloadListeners)) : body;
     }
 
-    private void parseResponse(int code, ResponseBody body) {
+    private void parseResponse(int id, int code, ResponseBody body) {
         try {
             Result result = mParser.parse(body, null);
-            forEach((callback, flag) -> callback.onSuccess(result));
+            forEach((callback, flag) -> callback.onSuccess(id, result));
         } catch (Exception e) {
-            invokeFailureCallback(false, true, true, code, mParser.onParseException(e));
+            invokeFailureCallback(id, false, true, true, code, mParser.onParseException(e));
         }
     }
 
-    private void invokeFailureCallback(boolean isCanceled, boolean hasResponse, boolean isHttpSuccess, int code, Exception e) {
-        forEach((callback, flag) -> callback.onFailure(isCanceled, callback.onParseExceptionMsg(isCanceled, hasResponse, isHttpSuccess, code, e)));
+    private void invokeFailureCallback(int id, boolean isCanceled, boolean hasResponse, boolean isHttpSuccess, int code, Exception e) {
+        forEach((callback, flag) -> callback.onFailure(id, isCanceled, callback.onParseExceptionMsg(id, isCanceled, hasResponse, isHttpSuccess, code, e)));
     }
 
     private void forEach(IterableUtils.IVoidCallback<ICallback<Result>> callback) {
