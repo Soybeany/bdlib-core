@@ -31,6 +31,12 @@ public interface ICallback<Result> {
     }
 
     /**
+     * 预处理的回调({@link #onSuccess}及{@link #onFailure}前调用)
+     */
+    default void onPreTreat(int id, boolean hasResponse) {
+    }
+
+    /**
      * 成功时的回调
      */
     void onSuccess(int id, Result result);
@@ -41,7 +47,7 @@ public interface ICallback<Result> {
     void onFailure(int id, boolean isCanceled, String msg);
 
     /**
-     * 最终的回调
+     * 最终的回调({@link #onSuccess}及{@link #onFailure}后调用)
      */
     default void onFinal(int id, boolean isCanceled) {
     }

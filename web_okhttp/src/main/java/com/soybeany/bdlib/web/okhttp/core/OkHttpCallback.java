@@ -39,6 +39,7 @@ public class OkHttpCallback<Result> implements Callback {
     @SuppressWarnings("NullableProblems")
     public void onFailure(Call call, IOException e) {
         int id = getCallId(call);
+        forEach((callback, flag) -> callback.onPreTreat(id, false));
         boolean isCanceled = call.isCanceled();
         invokeFailureCallback(id, isCanceled, false, false, CODE_NOT_DEFINE, e);
         forEach((callback, flag) -> callback.onFinal(id, isCanceled));
@@ -48,6 +49,7 @@ public class OkHttpCallback<Result> implements Callback {
     @SuppressWarnings("NullableProblems")
     public void onResponse(Call call, Response response) {
         int id = getCallId(call);
+        forEach((callback, flag) -> callback.onPreTreat(id, true));
         try (ResponseBody body = getResponseBody(response)) {
             if (response.isSuccessful()) {
                 parseResponse(id, response.code(), body);
