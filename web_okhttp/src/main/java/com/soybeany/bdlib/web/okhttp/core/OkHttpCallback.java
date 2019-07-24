@@ -14,8 +14,6 @@ import okhttp3.Callback;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-import static com.soybeany.bdlib.web.okhttp.core.ICallback.CODE_NOT_DEFINE;
-
 /**
  * <br>Created by Soybeany on 2019/4/9.
  */
@@ -39,27 +37,30 @@ public class OkHttpCallback<Result> implements Callback {
     @SuppressWarnings("NullableProblems")
     public void onFailure(Call call, IOException e) {
         int id = getCallId(call);
-        forEach((callback, flag) -> callback.onPreTreat(id, false));
-        boolean isCanceled = call.isCanceled();
-        invokeFailureCallback(id, isCanceled, false, false, CODE_NOT_DEFINE, e);
-        forEach((callback, flag) -> callback.onFinal(id, isCanceled));
+        int type = call.isCanceled() ? ICallback.TYPE_CANCEL : ICallback.TYPE_NO_RESPONSE;
+        forEach((callback, flag) -> callback.onPreTreat(id, type));
+        invokeFailureCallback(id, type, null, e);
+        forEach((callback, flag) -> callback.onFinal(id, type));
     }
 
     @Override
     @SuppressWarnings("NullableProblems")
     public void onResponse(Call call, Response response) {
         int id = getCallId(call);
-        forEach((callback, flag) -> callback.onPreTreat(id, true));
+        forEach((callback, flag) -> callback.onPreTreat(id, ICallback.TYPE_NORM));
+        int type;
+        String code = response.code() + "";
         try (ResponseBody body = getResponseBody(response)) {
             if (response.isSuccessful()) {
-                parseResponse(id, response.code(), body);
+                type = parseResponse(id, code, body);
             } else {
-                invokeFailureCallback(id, false, true, false, response.code(), null);
+                invokeFailureCallback(id, type = ICallback.TYPE_HTTP_ERROR, code, null);
             }
         } catch (Exception e) {
-            invokeFailureCallback(id, false, false, false, CODE_NOT_DEFINE, e);
+            invokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, e);
         }
-        forEach((callback, flag) -> callback.onFinal(id, false));
+        int finalType = type;
+        forEach((callback, flag) -> callback.onFinal(id, finalType));
     }
 
     // //////////////////////////////////设置方法//////////////////////////////////
@@ -107,17 +108,19 @@ public class OkHttpCallback<Result> implements Callback {
         return !mDownloadListeners.isEmpty() ? getNewCountResponseBody(body).listeners(set -> set.addAll(mDownloadListeners)) : body;
     }
 
-    private void parseResponse(int id, int code, ResponseBody body) {
+    private int parseResponse(int id, String code, ResponseBody body) {
+        int type = ICallback.TYPE_NORM;
         try {
             Result result = mParser.parse(body, null);
             forEach((callback, flag) -> callback.onSuccess(id, result));
         } catch (Exception e) {
-            invokeFailureCallback(id, false, true, true, code, mParser.onParseException(e));
+            invokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, mParser.onParseException(e));
         }
+        return type;
     }
 
-    private void invokeFailureCallback(int id, boolean isCanceled, boolean hasResponse, boolean isHttpSuccess, int code, Exception e) {
-        forEach((callback, flag) -> callback.onFailure(id, isCanceled, callback.onParseExceptionMsg(id, isCanceled, hasResponse, isHttpSuccess, code, e)));
+    private void invokeFailureCallback(int id, int type, String data, Exception e) {
+        forEach((callback, flag) -> callback.onFailure(id, type, callback.onParseExceptionMsg(id, type, data, e)));
     }
 
     private void forEach(IterableUtils.IVoidCallback<ICallback<Result>> callback) {
