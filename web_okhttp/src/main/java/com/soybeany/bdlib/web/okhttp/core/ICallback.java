@@ -36,9 +36,9 @@ public interface ICallback<Result> {
     // //////////////////////////////////方法区//////////////////////////////////
 
     /**
-     * 将异常解析为信息
+     * 使用标准方式解析提示语
      */
-    default String onParseExceptionMsg(int id, int type, String data, Exception e) {
+    static String parseStdMsg(int type, String data, Exception e) {
         String errMsg = (null != e ? e.getMessage() : "缺失异常信息");
         if (e instanceof HandledException) {
             return errMsg;
@@ -54,6 +54,13 @@ public interface ICallback<Result> {
                 return "解析异常(" + errMsg + ")";
         }
         return "意外异常(" + errMsg + ")";
+    }
+
+    /**
+     * 将异常解析为信息
+     */
+    default String onParseExceptionMsg(int id, int type, String data, Exception e) {
+        return parseStdMsg(type, data, e);
     }
 
     /**
