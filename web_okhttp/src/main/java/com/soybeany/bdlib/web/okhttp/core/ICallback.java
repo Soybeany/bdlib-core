@@ -87,6 +87,8 @@ public interface ICallback<Result> {
     default void onFinal(int id, int type) {
     }
 
+    // //////////////////////////////////拓展//////////////////////////////////
+
     interface Empty<Result> extends ICallback<Result> {
         @Override
         default void onSuccess(int id, Result result) {
@@ -94,6 +96,39 @@ public interface ICallback<Result> {
 
         @Override
         default void onFailure(int id, int type, String msg) {
+        }
+    }
+
+    class Wrapper<Result> implements ICallback<Result> {
+        private ICallback<Result> mTarget;
+
+        public Wrapper(ICallback<Result> target) {
+            mTarget = target;
+        }
+
+        @Override
+        public String onParseExceptionMsg(int id, int type, String data, Exception e) {
+            return mTarget.onParseExceptionMsg(id, type, data, e);
+        }
+
+        @Override
+        public void onPreTreat(int id, int type) {
+            mTarget.onPreTreat(id, type);
+        }
+
+        @Override
+        public void onSuccess(int id, Result result) {
+            mTarget.onSuccess(id, result);
+        }
+
+        @Override
+        public void onFailure(int id, int type, String msg) {
+            mTarget.onFailure(id, type, msg);
+        }
+
+        @Override
+        public void onFinal(int id, int type) {
+            mTarget.onFinal(id, type);
         }
     }
 }
