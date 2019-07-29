@@ -44,7 +44,8 @@ public class NotifierConnector<N1 extends Notifier, N2 extends Notifier> impleme
     private void connect(Notifier oldNotifier, Notifier newNotifier, Class<? extends INotifyMsg> disconnectMsg) {
         // 检测
         if (null == newNotifier || null == disconnectMsg) {
-            System.out.println("连接失败，以下值不能为null:" + newNotifier + "(Notifier)  " + disconnectMsg + "(disconnectMsg)");
+            // TODO: 2019/7/29 暂时屏蔽输出
+//            System.out.println("连接失败，以下值不能为null:" + newNotifier + "(Notifier)  " + disconnectMsg + "(disconnectMsg)");
             return;
         }
         // 移除旧值
