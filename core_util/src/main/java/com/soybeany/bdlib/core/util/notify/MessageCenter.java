@@ -45,6 +45,6 @@ public class MessageCenter {
     /**
      * 强引用回调
      */
-    public interface ICallback extends StorageCenter.ICallback<Object> {
+    public interface ICallback extends StorageCenter.ICallback<String, Object> {
     }
 }

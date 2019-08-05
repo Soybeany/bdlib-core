@@ -83,7 +83,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.IInvoker, CallbackMsg extend
         }
 
         @Override
-        public synchronized void onCall(Object data) {
+        public synchronized void onCall(String key, Object data) {
             if (!(data instanceof INotifyMsg)) {
                 return;
             }
@@ -136,7 +136,7 @@ public class Notifier<InvokerMsg extends INotifyMsg.IInvoker, CallbackMsg extend
         }
 
         /**
-         * 延迟移除(延迟到{@link #onCall(Object)}后才进行删除)
+         * 延迟移除(延迟到{@link #onCall}后才进行删除)
          */
         private synchronized void delayRemoveDealer(IOnCallListener listener) {
             if (mIsNotifying) {

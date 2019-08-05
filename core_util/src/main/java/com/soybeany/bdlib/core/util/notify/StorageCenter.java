@@ -13,10 +13,10 @@ import java.util.Set;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class StorageCenter<Key, Msg> {
     private KeySetStorage<Key, Info<Key, Msg>> CALLBACK_STORAGE = new KeySetStorage<>(); // 回调存储
-    private KeySetStorage<ICallback<Msg>, Info<Key, Msg>> HANDLER_STORAGE = new KeySetStorage<>(); // 处理器存储
+    private KeySetStorage<ICallback<Key, Msg>, Info<Key, Msg>> HANDLER_STORAGE = new KeySetStorage<>(); // 处理器存储
     private KeySetStorage<IExecutable, Info<Key, Msg>> HOLDER_STORAGE = new KeySetStorage<>(); // 持有器存储
 
-    public void register(IExecutable holder, Key key, ICallback<Msg> callback) {
+    public void register(IExecutable holder, Key key, ICallback<Key, Msg> callback) {
         // 创建信息
         Info<Key, Msg> info = new Info<>(key, holder, callback);
         // 回调映射中创建记录
@@ -35,7 +35,7 @@ public class StorageCenter<Key, Msg> {
         Optional.ofNullable(CALLBACK_STORAGE.get(key)).ifPresent(this::removeRecords);
     }
 
-    public void unregister(ICallback<Msg> callback) {
+    public void unregister(ICallback<Key, Msg> callback) {
         Optional.ofNullable(HANDLER_STORAGE.get(callback)).ifPresent(this::removeRecords);
     }
 
@@ -44,7 +44,7 @@ public class StorageCenter<Key, Msg> {
     }
 
     public void notifyDelay(Key key, Msg data, long delayMills) {
-        CALLBACK_STORAGE.invokeVal(key, info -> info.holder.post(() -> info.callback.onCall(data), delayMills));
+        CALLBACK_STORAGE.invokeVal(key, info -> info.holder.post(() -> info.callback.onCall(key, data), delayMills));
     }
 
     /**
@@ -67,16 +67,16 @@ public class StorageCenter<Key, Msg> {
     /**
      * 强引用回调
      */
-    public interface ICallback<Msg> {
-        void onCall(Msg data);
+    public interface ICallback<Key, Msg> {
+        void onCall(Key key, Msg data);
     }
 
     private static class Info<Key, Msg> {
         Key key;
         IExecutable holder;
-        ICallback<Msg> callback;
+        ICallback<Key, Msg> callback;
 
-        Info(Key key, IExecutable holder, ICallback<Msg> callback) {
+        Info(Key key, IExecutable holder, ICallback<Key, Msg> callback) {
             this.key = key;
             this.holder = holder;
             this.callback = callback;
