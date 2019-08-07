@@ -15,11 +15,11 @@ public abstract class DataDTOParser<T> extends DTOParser<T, IDataDto<T>> {
     }
 
     @Override
-    protected T onParseDTO(Gson gson, IDataDto<T> dto) {
+    protected T onParseDTO(Gson gson, IDataDto<T> dto) throws Exception {
         return onParseDTO(gson, gson.toJson(dto.data()));
     }
 
-    protected abstract T onParseDTO(Gson gson, String json);
+    protected abstract T onParseDTO(Gson gson, String json) throws Exception;
 
     /**
      * 标准实现(使用DataDto)
@@ -34,7 +34,7 @@ public abstract class DataDTOParser<T> extends DTOParser<T, IDataDto<T>> {
         }
 
         @Override
-        protected T onParseDTO(Gson gson, String json) {
+        protected T onParseDTO(Gson gson, String json) throws Exception {
             return gson.fromJson(json, mClazz);
         }
     }
@@ -51,7 +51,7 @@ public abstract class DataDTOParser<T> extends DTOParser<T, IDataDto<T>> {
         }
 
         @Override
-        protected T onParseDTO(Gson gson, String json) {
+        protected T onParseDTO(Gson gson, String json) throws Exception {
             return gson.fromJson(json, mToken.getType());
         }
     }

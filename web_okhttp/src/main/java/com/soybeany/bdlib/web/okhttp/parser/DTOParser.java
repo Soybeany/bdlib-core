@@ -25,7 +25,7 @@ public abstract class DTOParser<Result, Dto extends IDto> extends GsonParser<Res
         }
     }
 
-    protected abstract Result onParseDTO(Gson gson, Dto dto);
+    protected abstract Result onParseDTO(Gson gson, Dto dto) throws Exception;
 
     protected String onParseDTOErrMsg(String errMsg) {
         return errMsg + "[服务器]";
@@ -40,7 +40,7 @@ public abstract class DTOParser<Result, Dto extends IDto> extends GsonParser<Res
         }
 
         @Override
-        protected T onParseDTO(Gson gson, T dto) {
+        protected T onParseDTO(Gson gson, T dto) throws Exception {
             return dto;
         }
     }
