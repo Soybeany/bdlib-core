@@ -1,6 +1,7 @@
 package com.soybeany.bdlib.web.okhttp.core;
 
 import com.soybeany.bdlib.core.util.IterableUtils;
+import com.soybeany.bdlib.core.util.IterableUtils.IVoidCallback;
 import com.soybeany.bdlib.core.util.file.IProgressListener;
 import com.soybeany.bdlib.web.okhttp.counting.CountingResponseBody;
 import com.soybeany.bdlib.web.okhttp.parser.IParser;
@@ -39,7 +40,7 @@ public class OkHttpCallback<Result> implements Callback {
         int id = getCallId(call);
         int type = call.isCanceled() ? ICallback.TYPE_CANCEL : ICallback.TYPE_NO_RESPONSE;
         forEach((callback, flag) -> callback.onPreTreat(id, type));
-        onInvokeFailureCallback(id, type, null, e, call);
+        invokeFailureCallback(id, type, null, e, call);
         forEach((callback, flag) -> callback.onFinal(id, type));
     }
 
@@ -54,10 +55,10 @@ public class OkHttpCallback<Result> implements Callback {
             if (response.isSuccessful()) {
                 type = parseResponse(id, call, code, body);
             } else {
-                onInvokeFailureCallback(id, type = ICallback.TYPE_HTTP_ERROR, code, null, call);
+                invokeFailureCallback(id, type = ICallback.TYPE_HTTP_ERROR, code, null, call);
             }
         } catch (Exception e) {
-            onInvokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, e, call);
+            invokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, e, call);
         }
         int finalType = type;
         forEach((callback, flag) -> callback.onFinal(id, finalType));
@@ -103,12 +104,12 @@ public class OkHttpCallback<Result> implements Callback {
         return new CountingResponseBody(body);
     }
 
-    protected void onInvokeSuccessCallback(int id, Result result, Call call) {
-        forEach((callback, flag) -> callback.onSuccess(id, result));
+    protected IVoidCallback<ICallback<Result>> onInvokeSuccessCallback(int id, Result result, Call call) {
+        return (callback, flag) -> callback.onSuccess(id, result);
     }
 
-    protected void onInvokeFailureCallback(int id, int type, String data, Exception e, Call call) {
-        forEach((callback, flag) -> callback.onFailure(id, type, callback.onParseExceptionMsg(id, type, data, e)));
+    protected IVoidCallback<ICallback<Result>> onInvokeFailureCallback(int id, int type, String data, Exception e, Call call) {
+        return (callback, flag) -> callback.onFailure(id, type, callback.onParseExceptionMsg(id, type, data, e));
     }
 
     // //////////////////////////////////内部方法//////////////////////////////////
@@ -122,15 +123,22 @@ public class OkHttpCallback<Result> implements Callback {
         int type = ICallback.TYPE_NORM;
         try {
             Result result = mParser.parse(body, null);
-            onInvokeSuccessCallback(id, result, call);
-            forEach((callback, flag) -> callback.onSuccess(id, result));
+            invokeSuccessCallback(id, result, call);
         } catch (Exception e) {
-            onInvokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, mParser.onParseException(e), call);
+            invokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, mParser.onParseException(e), call);
         }
         return type;
     }
 
-    private void forEach(IterableUtils.IVoidCallback<ICallback<Result>> callback) {
+    private void invokeSuccessCallback(int id, Result result, Call call) {
+        forEach(onInvokeSuccessCallback(id, result, call));
+    }
+
+    private void invokeFailureCallback(int id, int type, String data, Exception e, Call call) {
+        forEach(onInvokeFailureCallback(id, type, data, e, call));
+    }
+
+    private void forEach(IVoidCallback<ICallback<Result>> callback) {
         IterableUtils.forEach(mCallbacks, callback);
     }
 }
