@@ -39,7 +39,7 @@ public class OkHttpCallback<Result> implements Callback {
         int id = getCallId(call);
         int type = call.isCanceled() ? ICallback.TYPE_CANCEL : ICallback.TYPE_NO_RESPONSE;
         forEach((callback, flag) -> callback.onPreTreat(id, type));
-        invokeFailureCallback(id, type, null, e);
+        onInvokeFailureCallback(id, type, null, e, call);
         forEach((callback, flag) -> callback.onFinal(id, type));
     }
 
@@ -52,12 +52,12 @@ public class OkHttpCallback<Result> implements Callback {
         String code = response.code() + "";
         try (ResponseBody body = getResponseBody(response)) {
             if (response.isSuccessful()) {
-                type = parseResponse(id, code, body);
+                type = parseResponse(id, call, code, body);
             } else {
-                invokeFailureCallback(id, type = ICallback.TYPE_HTTP_ERROR, code, null);
+                onInvokeFailureCallback(id, type = ICallback.TYPE_HTTP_ERROR, code, null, call);
             }
         } catch (Exception e) {
-            invokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, e);
+            onInvokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, e, call);
         }
         int finalType = type;
         forEach((callback, flag) -> callback.onFinal(id, finalType));
@@ -97,30 +97,37 @@ public class OkHttpCallback<Result> implements Callback {
         return this;
     }
 
-    // //////////////////////////////////内部方法//////////////////////////////////
+    // //////////////////////////////////子类重写//////////////////////////////////
 
     protected CountingResponseBody getNewCountResponseBody(ResponseBody body) {
         return new CountingResponseBody(body);
     }
+
+    protected void onInvokeSuccessCallback(int id, Result result, Call call) {
+        forEach((callback, flag) -> callback.onSuccess(id, result));
+    }
+
+    protected void onInvokeFailureCallback(int id, int type, String data, Exception e, Call call) {
+        forEach((callback, flag) -> callback.onFailure(id, type, callback.onParseExceptionMsg(id, type, data, e)));
+    }
+
+    // //////////////////////////////////内部方法//////////////////////////////////
 
     private ResponseBody getResponseBody(Response response) {
         ResponseBody body = response.body();
         return !mDownloadListeners.isEmpty() ? getNewCountResponseBody(body).listeners(set -> set.addAll(mDownloadListeners)) : body;
     }
 
-    private int parseResponse(int id, String code, ResponseBody body) {
+    private int parseResponse(int id, Call call, String code, ResponseBody body) {
         int type = ICallback.TYPE_NORM;
         try {
             Result result = mParser.parse(body, null);
+            onInvokeSuccessCallback(id, result, call);
             forEach((callback, flag) -> callback.onSuccess(id, result));
         } catch (Exception e) {
-            invokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, mParser.onParseException(e));
+            onInvokeFailureCallback(id, type = ICallback.TYPE_PARSE_ERROR, code, mParser.onParseException(e), call);
         }
         return type;
-    }
-
-    private void invokeFailureCallback(int id, int type, String data, Exception e) {
-        forEach((callback, flag) -> callback.onFailure(id, type, callback.onParseExceptionMsg(id, type, data, e)));
     }
 
     private void forEach(IterableUtils.IVoidCallback<ICallback<Result>> callback) {
