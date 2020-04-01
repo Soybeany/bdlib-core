@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * 消息管理器，使用相同Target的IMsg与CMsg
@@ -17,9 +19,11 @@ import java.util.Map;
  */
 @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
 public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCenter.IListener {
+    private static final Executor DELAY_EXECUTOR = Executors.newSingleThreadExecutor();
 
     private final Map<Class<?>, ITarget.MsgProcessor.ICallback> mCallbacks = new HashMap<>();
     private boolean mIsBinding;
+    private boolean mIsEnd;
     private MsgSender<CMsg, ?> mMsgSender;
 
     @SuppressWarnings("unchecked")
@@ -44,19 +48,14 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
         MsgCenter.register(mMsgSender.cKey, this);
         setupMsgProcessors(target);
         mIsBinding = true;
+        mIsEnd = false;
     }
 
     /**
      * 解除绑定，将与{@link MsgCenter}、{@link ITarget}、{@link MsgSender}等解绑
      */
     public synchronized void unbind() {
-        if (!mIsBinding) {
-            return;
-        }
-        mIsBinding = false;
-        mCallbacks.clear();
-        MsgCenter.unregister(mMsgSender.cKey, this);
-        mMsgSender = null;
+        unbind(true);
     }
 
     /**
@@ -64,11 +63,22 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
      *
      * @return 是否发送成功 只有设置了{@link MsgSender}后才可能发送成功并返回true，否则返回false
      */
-    public boolean sendMsg(CMsg msg) {
-        if (null == mMsgSender) {
+    public synchronized boolean sendMsg(CMsg msg) {
+        if (null == mMsgSender || mIsEnd) {
             return false;
         }
-        mMsgSender.sendCMsg(msg);
+        // 若有结束标识，则延迟发送，并解除绑定
+        if (msg instanceof Msg.EndFlag) {
+            mIsEnd = true;
+            DELAY_EXECUTOR.execute(() -> {
+                mMsgSender.sendCMsg(msg);
+                unbind(false);
+            });
+        }
+        // 普通消息，立刻发送
+        else {
+            mMsgSender.sendCMsg(msg);
+        }
         return true;
     }
 
@@ -82,4 +92,13 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
         }
     }
 
+    private void unbind(boolean considerIsEnd) {
+        if (!mIsBinding || (considerIsEnd && mIsEnd)) {
+            return;
+        }
+        mIsBinding = false;
+        mCallbacks.clear();
+        MsgCenter.unregister(mMsgSender.cKey, this);
+        mMsgSender = null;
+    }
 }

@@ -33,10 +33,10 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
     // //////////////////////////////////内部方法//////////////////////////////////
 
     private void setupMsgProcessors() {
-        List<MsgConverter<? extends CMsg, IMsg>> processors = new LinkedList<>();
-        onSetupMsgProcessors(processors);
-        for (MsgConverter<? extends CMsg, IMsg> processor : processors) {
-            mCallbacks.put(processor.clazz, processor.callback);
+        List<MsgConverter<? extends CMsg, IMsg>> converters = new LinkedList<>();
+        onSetupMsgConverters(converters);
+        for (MsgConverter<? extends CMsg, IMsg> converter : converters) {
+            mCallbacks.put(converter.clazz, converter.callback);
         }
     }
 
@@ -54,7 +54,7 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
 
     // //////////////////////////////////抽象方法//////////////////////////////////
 
-    protected abstract void onSetupMsgProcessors(List<MsgConverter<? extends CMsg, IMsg>> processors);
+    protected abstract void onSetupMsgConverters(List<MsgConverter<? extends CMsg, IMsg>> processors);
 
     // //////////////////////////////////内部类//////////////////////////////////
 

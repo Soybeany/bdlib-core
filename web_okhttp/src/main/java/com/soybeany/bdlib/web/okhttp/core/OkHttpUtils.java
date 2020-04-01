@@ -1,11 +1,8 @@
 package com.soybeany.bdlib.web.okhttp.core;
 
 import com.soybeany.bdlib.core.java8.Optional;
-import com.soybeany.bdlib.core.util.IterableUtils;
 
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -26,10 +23,6 @@ public class OkHttpUtils {
      */
     public static void setupPrototypeClient(IClientSetter setter) {
         PROTOTYPE = getNewClient(setter);
-    }
-
-    public static ClientPart newClientPart() {
-        return new ClientPart();
     }
 
     /**
@@ -61,41 +54,6 @@ public class OkHttpUtils {
             if (tag.equals(call.request().tag())) {
                 call.cancel();
             }
-        }
-    }
-
-    public static class ClientPart {
-        private final Set<IClientSetter> mOuterSetters = new LinkedHashSet<>();
-        private final IClientSetter mSetter = builder -> IterableUtils.forEach(mOuterSetters, (setter, flag) -> setter.onSetup(builder));
-
-        public ClientPart addSetter(IClientSetter setter) {
-            Optional.ofNullable(setter).ifPresent(mOuterSetters::add);
-            return this;
-        }
-
-        public ClientPart removeSetter(IClientSetter setter) {
-            Optional.ofNullable(setter).ifPresent(mOuterSetters::remove);
-            return this;
-        }
-
-        public RequestPart newRequest() {
-            return new RequestPart(newClient());
-        }
-
-        protected OkHttpClient newClient() {
-            return getNewClient(mSetter);
-        }
-    }
-
-    public static class RequestPart {
-        private OkHttpClient mClient;
-
-        public RequestPart(OkHttpClient client) {
-            mClient = client;
-        }
-
-        public Call newCall(IRequestSetter setter) {
-            return new FastFailCall(mClient.newCall(setter.onGetNewRequest(new OkHttpRequestBuilder())));
         }
     }
 

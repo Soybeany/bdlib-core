@@ -1,4 +1,4 @@
-package com.soybeany.bdlib.core.util.notify;
+package com.soybeany.bdlib.core.util.center;
 
 import com.soybeany.bdlib.core.util.storage.IExecutable;
 

@@ -15,6 +15,23 @@ public class Msg<T> {
         return mData;
     }
 
+    public void setData(T data) {
+        mData = data;
+    }
+
+    /**
+     * 标识此消息为开始消息
+     */
+    public interface StartFlag {
+
+    }
+
+    /**
+     * 标识此消息为结束消息
+     */
+    public interface EndFlag {
+    }
+
     /**
      * 主动消息
      */

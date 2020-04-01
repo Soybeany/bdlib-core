@@ -15,35 +15,33 @@ import java.util.List;
 public class TotalTest {
 
     @Test
-    public void test() {
+    public void test() throws Exception {
         // 创建目标实例
         Request request = new Request();
         Vee vee = new Vee();
-        // 获取消息管理器
-        MsgManager<RequestInvokeMsg, RequestCallbackMsg> rManager = new MsgManager<>();
-        MsgManager<ViewInvokeMsg, ViewCallbackMsg> vManager = new MsgManager<>();
         // 创建发送器，并连接
         RequestMsgSender sender1 = new RequestMsgSender();
         VeeMsgSender sender2 = new VeeMsgSender();
         MsgSender.connect(sender1, sender2);
+        // 获取消息管理器
+        MsgManager<RequestInvokeMsg, RequestCallbackMsg> rManager = request.manager;
+        MsgManager<ViewInvokeMsg, ViewCallbackMsg> vManager = vee.manager;
         // 绑定
         rManager.bind(request, sender1);
         vManager.bind(vee, sender2);
         // 发送
         rManager.sendMsg(new RequestCallbackMsg.OnStart("开始了"));
-        rManager.sendMsg(new RequestCallbackMsg.OnFinish("结束了"));
-        vManager.sendMsg(new ViewCallbackMsg.OnShow("显示了"));
-        vManager.sendMsg(new ViewCallbackMsg.onHide("隐藏了"));
-        // 解绑
-        rManager.unbind();
-        vManager.unbind();
+        rManager.sendMsg(new RequestCallbackMsg.OnFinish("正常"));
+        vManager.sendMsg(new ViewCallbackMsg.onHide("正常"));
+//        vManager.sendMsg(new ViewCallbackMsg.OnShow("显示了"));
+//        vManager.sendMsg(new ViewCallbackMsg.onHide("隐藏了"));
     }
 
     // //////////////////////////////////Sender//////////////////////////////////
 
     private static class RequestMsgSender extends MsgSender<RequestCallbackMsg, ViewInvokeMsg> {
         @Override
-        protected void onSetupMsgProcessors(List<MsgConverter<? extends RequestCallbackMsg, ViewInvokeMsg>> processors) {
+        protected void onSetupMsgConverters(List<MsgConverter<? extends RequestCallbackMsg, ViewInvokeMsg>> processors) {
             processors.add(new MsgConverter<>(RequestCallbackMsg.OnStart.class, msg -> new ViewInvokeMsg.Show(msg.getData())));
             processors.add(new MsgConverter<>(RequestCallbackMsg.OnFinish.class, msg -> new ViewInvokeMsg.Hide(msg.getData())));
         }
@@ -51,7 +49,7 @@ public class TotalTest {
 
     private static class VeeMsgSender extends MsgSender<ViewCallbackMsg, RequestInvokeMsg> {
         @Override
-        protected void onSetupMsgProcessors(List<MsgConverter<? extends ViewCallbackMsg, RequestInvokeMsg>> processors) {
+        protected void onSetupMsgConverters(List<MsgConverter<? extends ViewCallbackMsg, RequestInvokeMsg>> processors) {
             processors.add(new MsgConverter<>(ViewCallbackMsg.OnShow.class, msg -> new RequestInvokeMsg.Start(msg.getData())));
             processors.add(new MsgConverter<>(ViewCallbackMsg.onHide.class, msg -> new RequestInvokeMsg.Cancel(msg.getData())));
         }
@@ -60,18 +58,28 @@ public class TotalTest {
     // //////////////////////////////////Target//////////////////////////////////
 
     private static class Request implements ITarget<RequestInvokeMsg> {
+        final MsgManager<RequestInvokeMsg, RequestCallbackMsg> manager = new MsgManager<>();
+
         @Override
         public void onSetupMsgProcessors(List<MsgProcessor<? extends RequestInvokeMsg>> msgProcessors) {
             msgProcessors.add(new MsgProcessor<>(RequestInvokeMsg.Start.class, msg -> System.out.println("开始:" + msg.getData())));
-            msgProcessors.add(new MsgProcessor<>(RequestInvokeMsg.Cancel.class, msg -> System.out.println("结束:" + msg.getData())));
+            msgProcessors.add(new MsgProcessor<>(RequestInvokeMsg.Cancel.class, msg -> {
+                System.out.println("取消了:" + msg.getData());
+                manager.sendMsg(new RequestCallbackMsg.OnFinish("取消"));
+            }));
         }
     }
 
     private static class Vee implements ITarget<ViewInvokeMsg> {
+        final MsgManager<ViewInvokeMsg, ViewCallbackMsg> manager = new MsgManager<>();
+
         @Override
         public void onSetupMsgProcessors(List<MsgProcessor<? extends ViewInvokeMsg>> msgProcessors) {
             msgProcessors.add(new MsgProcessor<>(ViewInvokeMsg.Show.class, msg -> System.out.println("显示:" + msg.getData())));
-            msgProcessors.add(new MsgProcessor<>(ViewInvokeMsg.Hide.class, msg -> System.out.println("隐藏:" + msg.getData())));
+            msgProcessors.add(new MsgProcessor<>(ViewInvokeMsg.Hide.class, msg -> {
+                System.out.println("隐藏:" + msg.getData());
+                manager.sendMsg(new ViewCallbackMsg.onHide(msg.getData()));
+            }));
         }
     }
 
@@ -106,7 +114,7 @@ public class TotalTest {
             }
         }
 
-        static class OnFinish extends RequestCallbackMsg<String> {
+        static class OnFinish extends RequestCallbackMsg<String> implements EndFlag {
             OnFinish(String data) {
                 super(data);
             }
@@ -144,7 +152,7 @@ public class TotalTest {
             }
         }
 
-        static class onHide extends ViewCallbackMsg<String> {
+        static class onHide extends ViewCallbackMsg<String> implements EndFlag {
             onHide(String data) {
                 super(data);
             }
