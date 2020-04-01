@@ -1,20 +1,17 @@
 apply plugin: 'java-library'
-apply plugin: 'maven'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':core_java8')
-    implementation 'com.google.code.gson:gson:2.8.2'
     testImplementation 'junit:junit:4.12'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }
 
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
 }
 
 artifacts {

@@ -1,1 +1,2 @@
-include ':app', ':core_util', ':core_java8', ':web_okhttp', ':log_extract'
+include ':app', ':core_util', ':core_java8', ':web_okhttp'
+include ':connector'
