@@ -12,13 +12,18 @@ import java.util.Map;
 @SuppressWarnings("WeakerAccess")
 public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
 
-    public final MsgCenter.Key cKey = new MsgCenter.Key();
     private final Map<Class<?>, MsgConverter.ICallback> mCallbacks = new HashMap<>();
+    public final MsgCenter.Key cKey = new MsgCenter.Key();
     private MsgCenter.Key mIKey;
 
     public static void connect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
         sender1.mIKey = sender2.cKey;
         sender2.mIKey = sender1.cKey;
+    }
+
+    public static void disconnect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
+        sender1.mIKey = null;
+        sender2.mIKey = null;
     }
 
     {
