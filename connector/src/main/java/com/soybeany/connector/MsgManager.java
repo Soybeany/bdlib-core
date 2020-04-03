@@ -38,6 +38,9 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
 
     // //////////////////////////////////公开方法//////////////////////////////////
 
+    /**
+     * 设置用于延迟操作的执行器
+     */
     public MsgManager<IMsg, CMsg> delayTaskExecutor(DelayTaskExecutor executor) {
         if (null != executor) {
             mDelayTaskExecutor = executor;
