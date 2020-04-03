@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
@@ -19,13 +18,14 @@ import java.util.concurrent.Executors;
  */
 @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
 public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCenter.IListener {
-    // 因遍历发送消息(读锁)时，不能执行unbind(写锁)操作，否则会造成死锁，所以遍历时需将操作放入异步执行队列中
-    private static final Executor DELAY_EXECUTOR = Executors.newSingleThreadExecutor();
 
     private final Map<Class<?>, ITarget.MsgProcessor.ICallback> mCallbacks = new HashMap<>();
     private boolean mIsBinding;
     private boolean mIsEnd = true;
     private MsgSender<CMsg, ?> mMsgSender;
+
+    // 因遍历发送消息(读锁)时，不能执行unbind(写锁)操作，否则会造成死锁，所以遍历时需将操作放入异步执行队列中
+    private DelayTaskExecutor mDelayTaskExecutor = task -> Executors.newSingleThreadExecutor().execute(task);
 
     @SuppressWarnings("unchecked")
     @Override
@@ -37,6 +37,13 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
     }
 
     // //////////////////////////////////公开方法//////////////////////////////////
+
+    public MsgManager<IMsg, CMsg> delayTaskExecutor(DelayTaskExecutor executor) {
+        if (null != executor) {
+            mDelayTaskExecutor = executor;
+        }
+        return this;
+    }
 
     /**
      * 执行绑定，将与{@link MsgCenter}、{@link ITarget}、{@link MsgSender}等进行绑定
@@ -71,7 +78,7 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
         // 若有结束标识，则延迟发送，并解除绑定
         if (msg instanceof Msg.EndFlag) {
             mIsEnd = true;
-            DELAY_EXECUTOR.execute(() -> {
+            mDelayTaskExecutor.onExecute(() -> {
                 mMsgSender.sendCMsg(msg);
                 unbind(false);
             });
@@ -101,5 +108,9 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
         mCallbacks.clear();
         MsgCenter.unregister(mMsgSender.cKey, this);
         mMsgSender = null;
+    }
+
+    public interface DelayTaskExecutor {
+        void onExecute(Runnable task);
     }
 }
