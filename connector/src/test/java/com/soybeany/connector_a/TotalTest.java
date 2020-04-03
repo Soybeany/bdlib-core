@@ -32,7 +32,7 @@ public class TotalTest {
         // 发送
         rManager.sendMsg(new RequestCallbackMsg.OnStart("开始了"));
         rManager.sendMsg(new RequestCallbackMsg.OnFinish("正常"));
-        vManager.sendMsg(new ViewCallbackMsg.onHide("正常"));
+//        vManager.sendMsg(new ViewCallbackMsg.onHide("正常"));
 //        vManager.sendMsg(new ViewCallbackMsg.OnShow("显示了"));
 //        vManager.sendMsg(new ViewCallbackMsg.onHide("隐藏了"));
     }

@@ -7,7 +7,7 @@ package com.soybeany.connector;
 public class Msg<T> {
     private T mData;
 
-    Msg(T data) {
+    private Msg(T data) {
         mData = data;
     }
 
@@ -17,13 +17,6 @@ public class Msg<T> {
 
     public void setData(T data) {
         mData = data;
-    }
-
-    /**
-     * 标识此消息为开始消息
-     */
-    public interface StartFlag {
-
     }
 
     /**
@@ -39,6 +32,10 @@ public class Msg<T> {
         public I(T data) {
             super(data);
         }
+
+        public I() {
+            this(null);
+        }
     }
 
     /**
@@ -47,6 +44,10 @@ public class Msg<T> {
     public static class C<T> extends Msg<T> {
         public C(T data) {
             super(data);
+        }
+
+        public C() {
+            this(null);
         }
     }
 }

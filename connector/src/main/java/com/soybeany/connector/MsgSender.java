@@ -25,6 +25,9 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
         setupMsgProcessors();
     }
 
+    /**
+     * 用此方法发送消息，消息接收者禁止修改{@link MsgCenter}中相应key的{@link MsgCenter.IListener}，否则会造成死锁
+     */
     public void sendCMsg(CMsg msg) {
         MsgCenter.sendMsg(cKey, msg);
         sendMsgWithIKey(msg);

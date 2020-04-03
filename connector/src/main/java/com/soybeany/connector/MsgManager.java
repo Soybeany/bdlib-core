@@ -19,11 +19,12 @@ import java.util.concurrent.Executors;
  */
 @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
 public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCenter.IListener {
+    // 因遍历发送消息(读锁)时，不能执行unbind(写锁)操作，否则会造成死锁，所以遍历时需将操作放入异步执行队列中
     private static final Executor DELAY_EXECUTOR = Executors.newSingleThreadExecutor();
 
     private final Map<Class<?>, ITarget.MsgProcessor.ICallback> mCallbacks = new HashMap<>();
     private boolean mIsBinding;
-    private boolean mIsEnd;
+    private boolean mIsEnd = true;
     private MsgSender<CMsg, ?> mMsgSender;
 
     @SuppressWarnings("unchecked")
