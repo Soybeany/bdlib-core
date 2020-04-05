@@ -16,25 +16,17 @@ public class TotalTest {
 
     @Test
     public void test() throws Exception {
-        // 创建目标实例
-        Request request = new Request();
-        Vee vee = new Vee();
         // 创建发送器，并连接
         RequestMsgSender sender1 = new RequestMsgSender();
         VeeMsgSender sender2 = new VeeMsgSender();
         MsgSender.connect(sender1, sender2);
-        // 获取消息管理器
-        MsgManager<RequestInvokeMsg, RequestCallbackMsg> rManager = request.manager;
-        MsgManager<ViewInvokeMsg, ViewCallbackMsg> vManager = vee.manager;
-        // 绑定
-        rManager.bind(request, sender1, false);
-        vManager.bind(vee, sender2, false);
+        // 创建目标实例
+        Request request = new Request(sender1);
+        Vee vee = new Vee(sender2);
         // 发送
-        rManager.sendMsg(new RequestCallbackMsg.OnStart("onStart"));
-        rManager.sendMsg(new RequestCallbackMsg.OnFinish("onFinish"));
-        vManager.sendMsg(new ViewCallbackMsg.onHide("onHide"));
-//        vManager.sendMsg(new ViewCallbackMsg.OnShow("显示了"));
-//        vManager.sendMsg(new ViewCallbackMsg.onHide("隐藏了"));
+        sender1.sendCMsgWithDefaultUid(new RequestCallbackMsg.OnStart("onStart"));
+        sender1.sendCMsgWithDefaultUid(new RequestCallbackMsg.OnFinish("onFinish"));
+        sender2.sendCMsgWithDefaultUid(new ViewCallbackMsg.onHide("onHide"));
     }
 
     // //////////////////////////////////Sender//////////////////////////////////
@@ -59,40 +51,44 @@ public class TotalTest {
 
     private static class Request implements ITarget<RequestInvokeMsg> {
         final MsgManager<RequestInvokeMsg, RequestCallbackMsg> manager = new MsgManager<>();
+        private RequestMsgSender mSender;
+
+        Request(RequestMsgSender sender) {
+            mSender = sender;
+            manager.bind(this, mSender, false);
+        }
 
         @Override
         public void onSetupMsgProcessors(List<MsgProcessor<? extends RequestInvokeMsg>> msgProcessors) {
             msgProcessors.add(new MsgProcessor<>(RequestInvokeMsg.Start.class, msg -> {
                 System.out.println("开始:" + msg.data);
-                RequestCallbackMsg.OnStart onStart = new RequestCallbackMsg.OnStart(msg.data);
-                onStart.copySenderUid(msg);
-                manager.sendMsg(onStart);
+                mSender.sendCMsg(msg.senderUid, new RequestCallbackMsg.OnStart(msg.data));
             }));
             msgProcessors.add(new MsgProcessor<>(RequestInvokeMsg.Cancel.class, msg -> {
                 System.out.println("取消了:" + msg.data);
-                RequestCallbackMsg.OnFinish onFinish = new RequestCallbackMsg.OnFinish(msg.data);
-                onFinish.copySenderUid(msg);
-                manager.sendMsg(onFinish);
+                mSender.sendCMsg(msg.senderUid, new RequestCallbackMsg.OnFinish(msg.data));
             }));
         }
     }
 
     private static class Vee implements ITarget<ViewInvokeMsg> {
         final MsgManager<ViewInvokeMsg, ViewCallbackMsg> manager = new MsgManager<>();
+        private VeeMsgSender mSender;
+
+        Vee(VeeMsgSender sender) {
+            mSender = sender;
+            manager.bind(this, mSender, false);
+        }
 
         @Override
         public void onSetupMsgProcessors(List<MsgProcessor<? extends ViewInvokeMsg>> msgProcessors) {
             msgProcessors.add(new MsgProcessor<>(ViewInvokeMsg.Show.class, msg -> {
                 System.out.println("显示:" + msg.data);
-                ViewCallbackMsg.OnShow onShow = new ViewCallbackMsg.OnShow(msg.data);
-                onShow.copySenderUid(msg);
-                manager.sendMsg(onShow);
+                mSender.sendCMsg(msg.senderUid, new ViewCallbackMsg.OnShow(msg.data));
             }));
             msgProcessors.add(new MsgProcessor<>(ViewInvokeMsg.Hide.class, msg -> {
                 System.out.println("隐藏:" + msg.data);
-                ViewCallbackMsg.onHide onHide = new ViewCallbackMsg.onHide(msg.data);
-                onHide.copySenderUid(msg);
-                manager.sendMsg(onHide);
+                mSender.sendCMsg(msg.senderUid, new ViewCallbackMsg.onHide(msg.data));
             }));
         }
     }

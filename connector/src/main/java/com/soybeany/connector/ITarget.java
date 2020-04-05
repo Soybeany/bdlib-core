@@ -22,6 +22,10 @@ public interface ITarget<IMsg extends Msg.I> {
             this.callback = callback;
         }
 
+        /**
+         * 若要在此方法中使用{@link MsgSender}发送消息，使用{@link MsgSender#sendCMsg(String, Msg.C)}，
+         * 并将senderUid设置为入参msg的senderUid，以避免“消息的循环发送与处理”
+         */
         public interface ICallback<T extends Msg> {
             void onHandleMsg(T msg);
         }

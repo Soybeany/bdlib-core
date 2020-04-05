@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * 消息发送器，1个CKey，支持关联多个IKey
@@ -14,6 +15,7 @@ import java.util.Set;
 @SuppressWarnings("WeakerAccess")
 public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
 
+    public final String uid = UUID.randomUUID().toString().replaceAll("-", "");
     private final Map<Class<?>, MsgConverter.ICallback> mCallbacks = new HashMap<>();
     public final MsgCenter.Key cKey = new MsgCenter.Key();
     private final Set<MsgCenter.Key> mIKeys = new HashSet<>();
@@ -32,9 +34,20 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
         setupMsgProcessors();
     }
 
-    public void sendCMsg(CMsg msg) {
+    /**
+     * 为消息设置指定的senderUid，并发送
+     */
+    public void sendCMsg(String senderUid, CMsg msg) {
+        msg.senderUid = senderUid;
         MsgCenter.sendMsg(cKey, msg);
         sendMsgWithIKey(msg);
+    }
+
+    /**
+     * 使用默认Uid设置消息
+     */
+    public void sendCMsgWithDefaultUid(CMsg msg) {
+        sendCMsg(uid, msg);
     }
 
     // //////////////////////////////////内部方法//////////////////////////////////

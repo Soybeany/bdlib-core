@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * 消息管理器，使用相同Target的IMsg与CMsg
@@ -20,7 +19,6 @@ import java.util.UUID;
 public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCenter.IListener {
 
     private final Map<Class<?>, ITarget.MsgProcessor.ICallback> mCallbacks = new HashMap<>();
-    private final String mSenderUid = UUID.randomUUID().toString().replaceAll("-", "");
     private boolean mIsBinding;
     private MsgSender<CMsg, ?> mMsgSender;
 
@@ -29,16 +27,18 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
     public void onReceive(MsgCenter.Key key, Object msg) {
         // 获取消息处理器，没有对应的处理器则忽略
         ITarget.MsgProcessor.ICallback<IMsg> processor = mCallbacks.get(msg.getClass());
-        if (null == processor) {
+        if (null == processor || null == mMsgSender) {
             return;
         }
         // 若消息的发送者为自己，则忽略此消息，避免死循环
         IMsg iMsg = (IMsg) msg;
-        if (mSenderUid.equals(iMsg.senderUid)) {
+        if (mMsgSender.uid.equals(iMsg.senderUid)) {
             return;
         }
         // 若消息还没有发送者，则将发送者指定为自身
-        setSenderUidIfNotSet(iMsg);
+        if (null == iMsg.senderUid) {
+            iMsg.senderUid = mMsgSender.uid;
+        }
         // 处理消息
         processor.onHandleMsg(iMsg);
     }
@@ -85,27 +85,7 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
         mMsgSender = null;
     }
 
-    /**
-     * 发送消息
-     *
-     * @return 是否发送成功 只有设置了{@link MsgSender}后才可能发送成功并返回true，否则返回false
-     */
-    public synchronized boolean sendMsg(CMsg msg) {
-        if (null == mMsgSender) {
-            return false;
-        }
-        setSenderUidIfNotSet(msg);
-        mMsgSender.sendCMsg(msg);
-        return true;
-    }
-
     // //////////////////////////////////内部方法//////////////////////////////////
-
-    private void setSenderUidIfNotSet(Msg msg) {
-        if (null == msg.senderUid) {
-            msg.senderUid = mSenderUid;
-        }
-    }
 
     private void setupMsgProcessors(ITarget<IMsg> target) {
         List<ITarget.MsgProcessor<? extends IMsg>> processors = new LinkedList<>();

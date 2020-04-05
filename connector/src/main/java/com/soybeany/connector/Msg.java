@@ -20,20 +20,12 @@ public class Msg<T> {
         this.data = data;
     }
 
-    public void copySenderUid(Msg msg) {
-        senderUid = msg.senderUid;
-    }
-
     /**
      * 主动消息
      */
     public static class I<T> extends Msg<T> {
         public I(T data) {
             super(data);
-        }
-
-        public I() {
-            this(null);
         }
     }
 
@@ -43,10 +35,6 @@ public class Msg<T> {
     public static class C<T> extends Msg<T> {
         public C(T data) {
             super(data);
-        }
-
-        public C() {
-            this(null);
         }
     }
 }

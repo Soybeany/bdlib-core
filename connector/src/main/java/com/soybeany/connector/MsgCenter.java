@@ -22,14 +22,14 @@ public class MsgCenter {
     // //////////////////////////////////安全API//////////////////////////////////
 
     /**
-     * 使用安全方式
+     * 使用安全方式注册监听器(使用子线程)，在sendMsg过程中调用此方法，可避免死锁
      */
     public static void registerSafe(Key key, IListener listener) {
         EXECUTOR.execute(() -> register(key, listener));
     }
 
     /**
-     *
+     * 使用安全方式注销监听器(使用子线程)，在sendMsg过程中调用此方法，可避免死锁
      */
     public static void unregisterSafe(Key key, IListener listener) {
         EXECUTOR.execute(() -> unregister(key, listener));
@@ -38,7 +38,7 @@ public class MsgCenter {
     // //////////////////////////////////普通API//////////////////////////////////
 
     /**
-     * 注册监听器
+     * 注册监听器，若要在sendMsg过程中调用此方法，使用{@link #registerSafe}
      *
      * @return 是否注册成功
      */
@@ -63,7 +63,7 @@ public class MsgCenter {
     }
 
     /**
-     * 注销监听器
+     * 注销监听器，若要在sendMsg过程中调用此方法，使用{@link #unregisterSafe}
      *
      * @return 是否注销成功
      */
