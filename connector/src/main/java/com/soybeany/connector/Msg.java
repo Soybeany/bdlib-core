@@ -5,24 +5,23 @@ package com.soybeany.connector;
  */
 @SuppressWarnings("WeakerAccess")
 public class Msg<T> {
-    private T mData;
-
-    private Msg(T data) {
-        mData = data;
-    }
-
-    public T getData() {
-        return mData;
-    }
-
-    public void setData(T data) {
-        mData = data;
-    }
 
     /**
-     * 标识此消息为结束消息
+     * 标识发送者的uid
      */
-    public interface EndFlag {
+    public String senderUid;
+
+    /**
+     * 包含的数据
+     */
+    public T data;
+
+    private Msg(T data) {
+        this.data = data;
+    }
+
+    public void copySenderUid(Msg msg) {
+        senderUid = msg.senderUid;
     }
 
     /**

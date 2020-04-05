@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -14,7 +16,26 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
 public class MsgCenter {
 
-    private static Map<Key, Set<IListener>> CALLBACKS = new ConcurrentHashMap<>();
+    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+    private static final Map<Key, Set<IListener>> CALLBACKS = new ConcurrentHashMap<>();
+
+    // //////////////////////////////////安全API//////////////////////////////////
+
+    /**
+     * 使用安全方式
+     */
+    public static void registerSafe(Key key, IListener listener) {
+        EXECUTOR.execute(() -> register(key, listener));
+    }
+
+    /**
+     *
+     */
+    public static void unregisterSafe(Key key, IListener listener) {
+        EXECUTOR.execute(() -> unregister(key, listener));
+    }
+
+    // //////////////////////////////////普通API//////////////////////////////////
 
     /**
      * 注册监听器

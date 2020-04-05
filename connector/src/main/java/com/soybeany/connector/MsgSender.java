@@ -1,12 +1,14 @@
 package com.soybeany.connector;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * 消息发送器，使用不同Target的IMsg与CMsg
+ * 消息发送器，1个CKey，支持关联多个IKey
  * <br>Created by Soybeany on 2020/3/31.
  */
 @SuppressWarnings("WeakerAccess")
@@ -14,25 +16,22 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
 
     private final Map<Class<?>, MsgConverter.ICallback> mCallbacks = new HashMap<>();
     public final MsgCenter.Key cKey = new MsgCenter.Key();
-    private MsgCenter.Key mIKey;
+    private final Set<MsgCenter.Key> mIKeys = new HashSet<>();
 
-    public static void connect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
-        sender1.mIKey = sender2.cKey;
-        sender2.mIKey = sender1.cKey;
+    public static synchronized void connect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
+        sender1.mIKeys.add(sender2.cKey);
+        sender2.mIKeys.add(sender1.cKey);
     }
 
-    public static void disconnect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
-        sender1.mIKey = null;
-        sender2.mIKey = null;
+    public static synchronized void disconnect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
+        sender1.mIKeys.remove(sender2.cKey);
+        sender2.mIKeys.remove(sender1.cKey);
     }
 
     {
         setupMsgProcessors();
     }
 
-    /**
-     * 用此方法发送消息，消息接收者禁止修改{@link MsgCenter}中相应key的{@link MsgCenter.IListener}，否则会造成死锁
-     */
     public void sendCMsg(CMsg msg) {
         MsgCenter.sendMsg(cKey, msg);
         sendMsgWithIKey(msg);
@@ -50,13 +49,16 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
 
     @SuppressWarnings("unchecked")
     private void sendMsgWithIKey(CMsg cMsg) {
-        if (null == mIKey || null == cMsg) {
+        if (mIKeys.isEmpty() || null == cMsg) {
             return;
         }
         MsgConverter.ICallback<CMsg, IMsg> callback = mCallbacks.get(cMsg.getClass());
         IMsg iMsg;
         if (null != callback && null != (iMsg = callback.toIMsg(cMsg))) {
-            MsgCenter.sendMsg(mIKey, iMsg);
+            iMsg.senderUid = cMsg.senderUid;
+            for (MsgCenter.Key iKey : mIKeys) {
+                MsgCenter.sendMsg(iKey, iMsg);
+            }
         }
     }
 
