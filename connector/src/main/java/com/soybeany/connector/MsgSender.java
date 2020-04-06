@@ -1,7 +1,7 @@
 package com.soybeany.connector;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -18,14 +18,20 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
     public final String uid = UUID.randomUUID().toString().replaceAll("-", "");
     private final Map<Class<?>, MsgConverter.ICallback> mCallbacks = new HashMap<>();
     public final MsgCenter.Key cKey = new MsgCenter.Key();
-    private final Set<MsgCenter.Key> mIKeys = new HashSet<>();
+    private final Set<MsgCenter.Key> mIKeys = new LinkedHashSet<>();
 
     public static synchronized void connect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
+        if (null == sender1 || null == sender2) {
+            return;
+        }
         sender1.mIKeys.add(sender2.cKey);
         sender2.mIKeys.add(sender1.cKey);
     }
 
     public static synchronized void disconnect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
+        if (null == sender1 || null == sender2) {
+            return;
+        }
         sender1.mIKeys.remove(sender2.cKey);
         sender2.mIKeys.remove(sender1.cKey);
     }
