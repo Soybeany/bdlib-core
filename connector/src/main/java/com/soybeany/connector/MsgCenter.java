@@ -122,7 +122,7 @@ public class MsgCenter {
     }
 
     public static class Key {
-        final ReadWriteLock lock = new ReentrantReadWriteLock();
+        final ReadWriteLock lock = new ReentrantReadWriteLock(true);
     }
 
 }
