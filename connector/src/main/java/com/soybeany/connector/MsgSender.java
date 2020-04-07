@@ -52,7 +52,7 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
     /**
      * 使用默认Uid设置消息
      */
-    public void sendCMsgWithDefaultUid(CMsg msg) {
+    public void sendCMsg(CMsg msg) {
         sendCMsg(uid, msg);
     }
 

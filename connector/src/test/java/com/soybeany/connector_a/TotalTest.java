@@ -24,9 +24,9 @@ public class TotalTest {
         Request request = new Request(sender1);
         Vee vee = new Vee(sender2);
         // 发送
-        sender1.sendCMsgWithDefaultUid(new RequestCallbackMsg.OnStart("onStart"));
-        sender1.sendCMsgWithDefaultUid(new RequestCallbackMsg.OnFinish("onFinish"));
-        sender2.sendCMsgWithDefaultUid(new ViewCallbackMsg.onHide("onHide"));
+        sender1.sendCMsg(new RequestCallbackMsg.OnStart("onStart"));
+        sender1.sendCMsg(new RequestCallbackMsg.OnFinish("onFinish"));
+        sender2.sendCMsg(new ViewCallbackMsg.onHide("onHide"));
     }
 
     // //////////////////////////////////Sender//////////////////////////////////
