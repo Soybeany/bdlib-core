@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 消息发送器，1个CKey，支持关联多个IKey
@@ -16,24 +19,35 @@ import java.util.UUID;
 public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
 
     public final String uid = UUID.randomUUID().toString().replaceAll("-", "");
+    private final ReadWriteLock mLock = new ReentrantReadWriteLock();
     private final Map<Class<?>, MsgConverter.ICallback> mCallbacks = new HashMap<>();
     public final MsgCenter.Key cKey = new MsgCenter.Key();
     private final Set<MsgCenter.Key> mIKeys = new LinkedHashSet<>();
 
-    public static synchronized void connect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
-        if (null == sender1 || null == sender2) {
+    public void connect(MsgSender<?, ?> sender) {
+        if (null == sender) {
             return;
         }
-        sender1.mIKeys.add(sender2.cKey);
-        sender2.mIKeys.add(sender1.cKey);
+        Lock lock = mLock.writeLock();
+        try {
+            lock.lock();
+            mIKeys.add(sender.cKey);
+        } finally {
+            lock.unlock();
+        }
     }
 
-    public static synchronized void disconnect(MsgSender<? extends Msg.C, ? extends Msg.I> sender1, MsgSender<? extends Msg.C, ? extends Msg.I> sender2) {
-        if (null == sender1 || null == sender2) {
+    public void disconnect(MsgSender<?, ?> sender) {
+        if (null == sender) {
             return;
         }
-        sender1.mIKeys.remove(sender2.cKey);
-        sender2.mIKeys.remove(sender1.cKey);
+        Lock lock = mLock.writeLock();
+        try {
+            lock.lock();
+            mIKeys.remove(sender.cKey);
+        } finally {
+            lock.unlock();
+        }
     }
 
     {
@@ -71,13 +85,19 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
         if (mIKeys.isEmpty() || null == cMsg) {
             return;
         }
-        MsgConverter.ICallback<CMsg, IMsg> callback = mCallbacks.get(cMsg.getClass());
-        IMsg iMsg;
-        if (null != callback && null != (iMsg = callback.toIMsg(cMsg))) {
-            iMsg.senderUid = cMsg.senderUid;
-            for (MsgCenter.Key iKey : mIKeys) {
-                MsgCenter.sendMsg(iKey, iMsg);
+        Lock lock = mLock.readLock();
+        try {
+            lock.lock();
+            MsgConverter.ICallback<CMsg, IMsg> callback = mCallbacks.get(cMsg.getClass());
+            IMsg iMsg;
+            if (null != callback && null != (iMsg = callback.toIMsg(cMsg))) {
+                iMsg.senderUid = cMsg.senderUid;
+                for (MsgCenter.Key iKey : mIKeys) {
+                    MsgCenter.sendMsg(iKey, iMsg);
+                }
             }
+        } finally {
+            lock.unlock();
         }
     }
 
