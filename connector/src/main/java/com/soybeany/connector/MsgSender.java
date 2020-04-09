@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -24,30 +23,18 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
     public final MsgCenter.Key cKey = new MsgCenter.Key();
     private final Set<MsgCenter.Key> mIKeys = new LinkedHashSet<>();
 
-    public void connect(MsgSender<?, ?> sender) {
+    public void connect(MsgSender<?, ?> sender, boolean inSafeMode) {
         if (null == sender) {
             return;
         }
-        Lock lock = mLock.writeLock();
-        try {
-            lock.lock();
-            mIKeys.add(sender.cKey);
-        } finally {
-            lock.unlock();
-        }
+        LockUtils.execute(mLock.writeLock(), () -> mIKeys.add(sender.cKey), inSafeMode);
     }
 
-    public void disconnect(MsgSender<?, ?> sender) {
+    public void disconnect(MsgSender<?, ?> sender, boolean inSafeMode) {
         if (null == sender) {
             return;
         }
-        Lock lock = mLock.writeLock();
-        try {
-            lock.lock();
-            mIKeys.remove(sender.cKey);
-        } finally {
-            lock.unlock();
-        }
+        LockUtils.execute(mLock.writeLock(), () -> mIKeys.remove(sender.cKey), inSafeMode);
     }
 
     {
@@ -85,9 +72,7 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
         if (mIKeys.isEmpty() || null == cMsg) {
             return;
         }
-        Lock lock = mLock.readLock();
-        try {
-            lock.lock();
+        LockUtils.execute(mLock.readLock(), () -> {
             MsgConverter.ICallback<CMsg, IMsg> callback = mCallbacks.get(cMsg.getClass());
             IMsg iMsg;
             if (null != callback && null != (iMsg = callback.toIMsg(cMsg))) {
@@ -96,9 +81,7 @@ public abstract class MsgSender<CMsg extends Msg.C, IMsg extends Msg.I> {
                     MsgCenter.sendMsg(iKey, iMsg);
                 }
             }
-        } finally {
-            lock.unlock();
-        }
+        }, false);
     }
 
     // //////////////////////////////////抽象方法//////////////////////////////////

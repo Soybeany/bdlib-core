@@ -19,7 +19,8 @@ public class TotalTest {
         // 创建发送器，并连接
         RequestMsgSender sender1 = new RequestMsgSender();
         VeeMsgSender sender2 = new VeeMsgSender();
-        MsgSender.connect(sender1, sender2);
+        sender1.connect(sender2, false);
+        sender2.connect(sender1, false);
         // 创建目标实例
         Request request = new Request(sender1);
         Vee vee = new Vee(sender2);

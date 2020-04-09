@@ -56,11 +56,7 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
             return;
         }
         mMsgSender = msgSender;
-        if (inSafeMode) {
-            MsgCenter.registerSafe(mMsgSender.cKey, this);
-        } else {
-            MsgCenter.register(mMsgSender.cKey, this);
-        }
+        MsgCenter.register(mMsgSender.cKey, this, inSafeMode);
         setupMsgProcessors(target);
         mIsBinding = true;
     }
@@ -77,11 +73,7 @@ public class MsgManager<IMsg extends Msg.I, CMsg extends Msg.C> implements MsgCe
         }
         mIsBinding = false;
         mCallbacks.clear();
-        if (inSafeMode) {
-            MsgCenter.unregisterSafe(mMsgSender.cKey, this);
-        } else {
-            MsgCenter.unregister(mMsgSender.cKey, this);
-        }
+        MsgCenter.unregister(mMsgSender.cKey, this, inSafeMode);
         mMsgSender = null;
     }
 

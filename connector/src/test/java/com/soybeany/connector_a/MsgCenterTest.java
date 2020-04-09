@@ -22,7 +22,7 @@ public class MsgCenterTest {
                 MsgCenter.register(key, (k, msg) -> {
 //                    System.out.println(finalI + "收到:" + msg);
                     integer.incrementAndGet();
-                });
+                }, false);
             }).start();
         }
         // 发送
@@ -41,7 +41,7 @@ public class MsgCenterTest {
         MsgCenter.Key key = new MsgCenter.Key();
         MsgCenter.register(key, (k, msg) -> {
             System.out.println("收到:" + msg);
-        });
+        }, false);
         MsgCenter.sendMsg(key, "通知");
     }
 

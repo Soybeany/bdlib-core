@@ -4,51 +4,27 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <br>Created by Soybeany on 2020/3/31.
  */
-@SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
+@SuppressWarnings({"WeakerAccess"})
 public class MsgCenter {
 
-    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
     private static final Map<Key, Set<IListener>> CALLBACKS = new ConcurrentHashMap<>();
 
-    // //////////////////////////////////安全API//////////////////////////////////
+    // //////////////////////////////////API//////////////////////////////////
 
     /**
-     * 使用安全方式注册监听器(使用子线程)，在sendMsg过程中调用此方法，可避免死锁
+     * 注册监听器，若要在sendMsg过程中调用此方法，需使用安全模式(使用子线程)，可避免死锁
      */
-    public static void registerSafe(Key key, IListener listener) {
-        EXECUTOR.execute(() -> register(key, listener));
-    }
-
-    /**
-     * 使用安全方式注销监听器(使用子线程)，在sendMsg过程中调用此方法，可避免死锁
-     */
-    public static void unregisterSafe(Key key, IListener listener) {
-        EXECUTOR.execute(() -> unregister(key, listener));
-    }
-
-    // //////////////////////////////////普通API//////////////////////////////////
-
-    /**
-     * 注册监听器，若要在sendMsg过程中调用此方法，使用{@link #registerSafe}
-     *
-     * @return 是否注册成功
-     */
-    public static boolean register(Key key, IListener listener) {
+    public static void register(Key key, IListener listener, boolean inSafeMode) {
         if (null == key || null == listener) {
-            return false;
+            return;
         }
-        Lock lock = key.lock.writeLock();
-        try {
-            lock.lock();
+        LockUtils.execute(key.lock.writeLock(), () -> {
             // 若Set未创建则创建
             Set<IListener> callbacks = CALLBACKS.get(key);
             if (null == callbacks) {
@@ -56,28 +32,21 @@ public class MsgCenter {
             }
             // 添加回调
             callbacks.add(listener);
-            return true;
-        } finally {
-            lock.unlock();
-        }
+        }, inSafeMode);
     }
 
     /**
-     * 注销监听器，若要在sendMsg过程中调用此方法，使用{@link #unregisterSafe}
-     *
-     * @return 是否注销成功
+     * 注销监听器，若要在sendMsg过程中调用此方法，需使用安全模式(使用子线程)，可避免死锁
      */
-    public static boolean unregister(Key key, IListener listener) {
+    public static void unregister(Key key, IListener listener, boolean inSafeMode) {
         if (null == key || null == listener) {
-            return false;
+            return;
         }
-        Lock lock = key.lock.writeLock();
-        try {
-            lock.lock();
+        LockUtils.execute(key.lock.writeLock(), () -> {
             Set<IListener> callbacks = CALLBACKS.get(key);
             // 若没有匹配结果，直接返回
             if (null == callbacks) {
-                return false;
+                return;
             }
             // 移除回调
             callbacks.remove(listener);
@@ -85,34 +54,24 @@ public class MsgCenter {
             if (callbacks.isEmpty()) {
                 CALLBACKS.remove(key);
             }
-            return true;
-        } finally {
-            lock.unlock();
-        }
+        }, inSafeMode);
     }
 
     /**
      * 发送消息
-     *
-     * @return 是否发送成功
      */
-    public static boolean sendMsg(Key key, Object msg) {
-        Lock lock = key.lock.readLock();
-        try {
-            lock.lock();
+    public static void sendMsg(Key key, Object msg) {
+        LockUtils.execute(key.lock.readLock(), () -> {
             Set<IListener> callbacks = CALLBACKS.get(key);
             // 若没有匹配的回调则直接返回
             if (null == callbacks) {
-                return false;
+                return;
             }
             // 执行回调
             for (IListener callback : callbacks) {
                 callback.onReceive(key, msg);
             }
-            return true;
-        } finally {
-            lock.unlock();
-        }
+        }, false);
     }
 
     // //////////////////////////////////内部类//////////////////////////////////
