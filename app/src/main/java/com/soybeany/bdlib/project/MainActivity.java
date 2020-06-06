@@ -1,7 +1,8 @@
 package com.soybeany.bdlib.project;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * 主页面
